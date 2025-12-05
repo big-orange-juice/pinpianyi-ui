@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { MOCK_PRODUCTS, MOCK_COMPETITORS } from '../constants';
 import { PriceComparisonRow, StockStatus, ActivityType, Platform, PriceStatusFilter, PriceTrend, SellThroughStatus } from '../types';
 import { generateDiagnosisReport } from '../services/geminiService';
-import { Loader2, Filter, Search, MapPin, ArrowUpRight, ArrowDownRight, Minus, Activity, FileText, BarChart3, ScatterChart as ScatterIcon, Percent, MessageSquare, AlertCircle, Package, TrendingDown, Tag, Clock, XCircle, Download } from 'lucide-react';
+import { Loader2, Filter, Search, MapPin, ArrowUpRight, ArrowDownRight, Minus, Activity, FileText, BarChart3, ScatterChart as ScatterIcon, Percent, MessageSquare, AlertCircle, Package, TrendingDown, Tag, Clock, XCircle, Download, Bot } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import AnalysisReportModal from '../components/AnalysisReportModal';
@@ -195,6 +195,13 @@ const PriceAnalysis: React.FC = () => {
      if (report) { setReportData(report); setReportModalOpen(true); } 
      else { alert("报告生成失败，请重试。"); }
   };
+
+  const handleDelegateToAgent = () => {
+      const context = `区域:${selectedRegion}, 平台:${selectedPlatform}, 类目:${selectedCategory}`;
+      const criticalCount = filteredTableData.filter(d => d.alertLevel === 'Critical').length;
+      const message = `请帮我委派一个深度分析任务：分析当前【${context}】的价格竞争态势，共${filteredTableData.length}个SKU，其中${criticalCount}个严重预警。请制定可执行的价格策略。`;
+      openAgent(message);
+  };
   
   const handleExport = () => {
     const headers = ['SKU ID', '商品名称', '品牌', '类目', '规格', '我方售价', '成本', '竞对平台', '竞对价格', '价差', '状态', '建议', '分析备注'];
@@ -318,6 +325,13 @@ const PriceAnalysis: React.FC = () => {
             >
                 <Download size={16} className="text-slate-500" />
                 导出表格
+            </button>
+            <button 
+                onClick={handleDelegateToAgent}
+                className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2 font-medium text-sm"
+            >
+                <Bot size={16} className="text-white" />
+                委派给云智能体
             </button>
             <button 
                 onClick={handleDeepDiagnosis}

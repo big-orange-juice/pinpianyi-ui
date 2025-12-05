@@ -150,6 +150,28 @@ const AgentAssistant: React.FC = () => {
                       content: `⚡ ${displayMsg}`, 
                       isToolUse: true 
                   }]);
+              } else if (call.name === 'delegate_analysis_task') {
+                  const args = call.args as any;
+                  const taskTypeMap: Record<string, string> = {
+                      'PRICE_STRATEGY': '价格策略制定',
+                      'COMPETITOR_ANALYSIS': '竞品深度分析',
+                      'MARKET_TREND': '市场趋势预测',
+                      'PRODUCT_OPTIMIZATION': '产品优化建议',
+                      'RISK_ASSESSMENT': '风险评估'
+                  };
+                  
+                  const taskName = taskTypeMap[args.taskType] || args.taskType;
+                  const priority = args.priority || 'MEDIUM';
+                  const priorityEmoji = priority === 'HIGH' ? '🔴' : priority === 'MEDIUM' ? '🟡' : '🟢';
+                  
+                  const displayMsg = `${priorityEmoji} 已接受委派：【${taskName}】\n📋 任务上下文：${args.context}\n🎯 预期产出：${args.expectedOutcome || '深度分析报告'}`;
+                  toolOutputs.push(`Delegation accepted: ${taskName}. Processing with ${priority} priority.`);
+                  
+                  setMessages(prev => [...prev, { 
+                      role: 'assistant', 
+                      content: `⚡ ${displayMsg}`, 
+                      isToolUse: true 
+                  }]);
               }
           }
           

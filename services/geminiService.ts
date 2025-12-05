@@ -72,6 +72,36 @@ const dashboardTool: FunctionDeclaration = {
   }
 };
 
+// Tool Definition for Task Delegation
+const delegationTool: FunctionDeclaration = {
+  name: "delegate_analysis_task",
+  description: "Delegate a complex analysis task to the cloud AI agent for autonomous deep analysis. Use this when the user explicitly asks to 'delegate' (委派) a task, or when a task requires multi-step analysis, cross-platform comparison, or strategic planning that needs AI autonomy.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      taskType: {
+        type: Type.STRING,
+        enum: ["PRICE_STRATEGY", "COMPETITOR_ANALYSIS", "MARKET_TREND", "PRODUCT_OPTIMIZATION", "RISK_ASSESSMENT"],
+        description: "The type of analysis task to delegate."
+      },
+      context: {
+        type: Type.STRING,
+        description: "Context for the delegated task, including product names, regions, platforms, or specific scenarios."
+      },
+      priority: {
+        type: Type.STRING,
+        enum: ["HIGH", "MEDIUM", "LOW"],
+        description: "Priority level of the delegated task."
+      },
+      expectedOutcome: {
+        type: Type.STRING,
+        description: "What outcome or deliverable is expected from this delegated analysis."
+      }
+    },
+    required: ["taskType", "context"]
+  }
+};
+
 export const generatePriceStrategy = async (data: PriceComparisonRow[]): Promise<StrategyInsight[]> => {
   if (!API_KEY) {
     return [
@@ -305,7 +335,7 @@ export const getChatSession = () => {
     chatSession = ai.chats.create({
       model: 'gemini-2.5-flash',
       config: {
-        tools: [{ functionDeclarations: [dashboardTool] }],
+        tools: [{ functionDeclarations: [dashboardTool, delegationTool] }],
         systemInstruction: `你是一个专业的"拼便宜商品运营Agent"。
         
         **核心职责：**
@@ -320,7 +350,14 @@ export const getChatSession = () => {
            - 识别"倒挂"：区分真亏损还是假限购。
            - **生成研报**：当用户点击“深度诊断”时，无需调用工具，直接生成文字分析即可。
 
-        3. **数据清洗专家 (Crawler Schema)**：
+
+        3. **任务委派能力 (云智能体)**：
+           - 当用户明确要求"委派"某项任务，或需要执行复杂的多步分析时，调用 'delegate_analysis_task' 工具。
+           - 委派场景包括：价格策略制定、竞品深度分析、市场趋势预测、产品优化建议、风险评估等。
+           - 接受委派后，需要：(1) 确认任务详情; (2) 执行深度分析; (3) 提供可执行的建议。
+           - 委派成功后告知用户："✅ 已接受委派任务，正在进行深度分析..."
+
+        4. **数据清洗专家 (Crawler Schema)**：
            - **场景**：当用户询问“发现新字段 xxx” 或 “导入了新平台字段”时。
            - **任务**：(1) 将英文 Key 翻译为中文业务含义; (2) 判断是否属于【成本项】、【活动项】或【基础属性】; (3) 建议是否映射到本地系统 (Local Mapping)。
            - **Schema 知识库**:
