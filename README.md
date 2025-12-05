@@ -1,20 +1,106 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 拼便宜商品运营Agent
 
-# Run and deploy your AI Studio app
+智能商品运营与竞价系统 - Next.js版本
 
-This contains everything you need to run your app locally.
+## ✨ 项目简介
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Od5uJ7d9MfvMiZeW7GVEJoVOYy-WdTsM
+这是一个B2B电商平台的智能商品运营系统，提供价格分析、竞争对手监控、策略配置等功能。
 
-## Run Locally
+**已从React + Vite成功迁移到Next.js 14 App Router** 🎉
 
-**Prerequisites:**  Node.js
+## 🚀 快速开始
 
+### 环境要求
+- Node.js 18+ 
+- npm 或 yarn
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 安装运行
+
+```bash
+# 1. 安装依赖
+npm install
+
+# 2. 启动开发服务器
+npm run dev
+
+# 3. 访问应用
+# 浏览器打开: http://localhost:3000
+```
+
+### 生产构建
+
+```bash
+# 构建
+npm run build
+
+# 启动生产服务器  
+npm run start
+```
+
+## 📦 技术栈
+
+- **框架**: Next.js 14 (App Router)
+- **语言**: TypeScript
+- **状态管理**: Zustand
+- **样式**: Tailwind CSS
+- **图表**: ECharts
+- **图标**: Lucide React
+
+## 📁 项目结构
+
+```
+├── app/                  # Next.js App Router
+│   ├── api/             # API Routes
+│   ├── page.tsx         # 仪表盘
+│   ├── analysis/        # 价盘分析
+│   ├── config/          # 策略配置
+│   └── data/            # 数据采集
+├── components/          # React组件
+├── store/              # Zustand状态管理
+├── services/           # 数据服务
+├── types.ts            # TypeScript类型
+└── constants.ts        # 常量和模拟数据
+```
+
+## 🎯 主要功能
+
+- ✅ **仪表盘**: KPI展示、价格走势图、预警列表
+- ✅ **价盘分析**: 多维度价格分析矩阵
+- ✅ **策略配置**: 竞争对手策略分析
+- ✅ **数据采集**: 数据源配置和字段映射
+
+## 📚 文档
+
+- [MIGRATION.md](MIGRATION.md) - 迁移详细文档
+- [SUMMARY.md](SUMMARY.md) - 项目总结
+
+## 🛠️ 开发
+
+### 可用命令
+
+```bash
+npm run dev      # 开发服务器
+npm run build    # 生产构建
+npm run start    # 启动生产服务器
+```
+
+### API接口
+
+- `GET /api/products` - 获取产品列表
+- `GET /api/competitors` - 获取竞争对手数据
+- `GET /api/history?productId=xxx` - 获取历史数据
+
+## 📝 注意事项
+
+- 本项目使用模拟数据，可通过API Routes获取
+- Gemini AI功能已移除
+- 完整页面功能可从 `_old/pages/` 目录迁移
+
+## 📄 License
+
+MIT
+
+---
+
+**迁移完成时间**: 2024年
+**构建状态**: ✅ 成功
