@@ -8,28 +8,13 @@ import {
   Paperclip,
   Bot,
   User,
-  FileText,
-  Sparkles,
   Bell,
-  ArrowRight,
-  Database,
-  Search,
   History,
   Plus,
-  MessageSquare,
-  BarChart2
+  MessageSquare
 } from 'lucide-react';
-import { sendChatMessage, sendToolResponse } from '../services/geminiService';
-import { GenerateContentResponse } from '@google/genai';
-import { useAppContext } from '../contexts/AppContext';
-import {
-  Platform,
-  ActivityType,
-  PriceStatusFilter,
-  Message,
-  DELEGATION_TASK_LABELS
-} from '../types';
-import { useNavigate } from 'react-router-dom';
+import { Message } from '../types';
+import { useAppStore } from '../store/useAppStore';
 
 const AgentAssistant: React.FC = () => {
   const {
@@ -56,12 +41,13 @@ const AgentAssistant: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     if (agentInputMessage) {
+      // We intentionally sync queued agent prompts into the local input once.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(agentInputMessage);
       setActiveTab('CHAT');
       setAgentInputMessage('');
@@ -96,136 +82,6 @@ const AgentAssistant: React.FC = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() && !selectedFile) return;
-
-    for await (const chunk of stream) {
-      if (chunk.functionCalls && chunk.functionCalls.length > 0) {
-        functionCalls.push(...chunk.functionCalls);
-      }
-
-      const text = chunk.text;
-      if (text) {
-        fullResponse += text;
-        setMessages((prev) => {
-          const newMsgs = [...prev];
-          if (isFirstChunk) {
-            const lastIdx = newMsgs.length - 1;
-            if (
-              newMsgs[lastIdx].role === 'assistant' &&
-              newMsgs[lastIdx].content === '正在分析数据...'
-            ) {
-              newMsgs[lastIdx] = { role: 'assistant', content: fullResponse };
-            } else {
-              newMsgs.push({ role: 'assistant', content: fullResponse });
-            }
-            isFirstChunk = false;
-          } else {
-            newMsgs[newMsgs.length - 1].content = fullResponse;
-          }
-          return newMsgs;
-        });
-      }
-    }
-
-    // Handle Tool Calls
-    if (functionCalls.length > 0) {
-      const toolOutputs: string[] = [];
-      let shouldNavigate = false;
-
-      for (const call of functionCalls) {
-        if (call.name === 'update_dashboard_filters') {
-          const args = call.args as any;
-          let filterDesc = '';
-
-          if (args.platform && args.platform !== 'ALL') {
-            setSelectedPlatform(args.platform as Platform);
-            filterDesc += `平台:${args.platform} `;
-          } else if (args.platform === 'ALL') {
-            setSelectedPlatform('ALL');
-          }
-
-          if (args.category) {
-            setSelectedCategory(args.category);
-            filterDesc += `类目:${args.category} `;
-          }
-
-          if (args.activityType) {
-            setSelectedActivity(args.activityType as ActivityType);
-          }
-
-          if (args.region) {
-            setSelectedRegion(args.region);
-            filterDesc += `区域:${args.region} `;
-          }
-
-          if (args.priceStatus && args.priceStatus !== 'ALL') {
-            setSelectedPriceStatus(args.priceStatus as PriceStatusFilter);
-            filterDesc += `状态:${args.priceStatus} `;
-          }
-
-          if (args.searchTerm) {
-            setSearchTerm(args.searchTerm);
-            filterDesc += `商品:${args.searchTerm}`;
-          }
-
-          // TRIGGER NAVIGATION
-          shouldNavigate = true;
-
-          const displayMsg = `已为您自动筛选 [${
-            filterDesc.trim() || '全部数据'
-          }]，并跳转至分析矩阵。`;
-          toolOutputs.push('Success');
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: 'assistant',
-              content: `⚡ ${displayMsg}`,
-              isToolUse: true
-            }
-          ]);
-        } else if (call.name === 'delegate_analysis_task') {
-          const args = call.args as any;
-          const taskName =
-            DELEGATION_TASK_LABELS[
-              args.taskType as keyof typeof DELEGATION_TASK_LABELS
-            ] || args.taskType;
-          const priority = args.priority || 'MEDIUM';
-          const priorityEmoji =
-            priority === 'HIGH' ? '🔴' : priority === 'MEDIUM' ? '🟡' : '🟢';
-
-          const displayMsg = `${priorityEmoji} 已接受委派：【${taskName}】\n📋 任务上下文：${
-            args.context
-          }\n🎯 预期产出：${args.expectedOutcome || '深度分析报告'}`;
-          toolOutputs.push(
-            `Delegation accepted: ${taskName}. Processing with ${priority} priority.`
-          );
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: 'assistant',
-              content: `⚡ ${displayMsg}`,
-              isToolUse: true
-            }
-          ]);
-        }
-      }
-
-      if (shouldNavigate) {
-        navigate('/analysis');
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: '正在生成分析结论...' }
-      ]);
-      const toolStream = await sendToolResponse(functionCalls, toolOutputs);
-      await processStream(toolStream);
-    }
-  };
-
   const handleSendMessage = async (overrideContent?: string) => {
     const contentToSend = overrideContent || inputValue;
     if ((!contentToSend.trim() && !selectedFile) || isLoading) return;
@@ -237,7 +93,7 @@ const AgentAssistant: React.FC = () => {
       fileName: selectedFile?.name
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setInputValue('');
     setIsLoading(true);
 
@@ -511,7 +367,7 @@ const AgentAssistant: React.FC = () => {
               disabled={isLoading}
             />
             <button
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={isLoading || (!inputValue.trim() && !selectedFile)}
               className='p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'>
               <Send size={20} />
