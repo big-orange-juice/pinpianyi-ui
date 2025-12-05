@@ -1,12 +1,15 @@
 
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, TrendingUp, Database, Settings, X, Save, AlertTriangle, SlidersHorizontal } from 'lucide-react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppStore } from '@/store/useAppStore';
 
 const Sidebar: React.FC = () => {
-  const location = useLocation();
-  const { costThreshold, setCostThreshold } = useAppContext();
+  const pathname = usePathname();
+  const { costThreshold, setCostThreshold } = useAppStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempThreshold, setTempThreshold] = useState(costThreshold);
 
@@ -40,11 +43,11 @@ const Sidebar: React.FC = () => {
         <nav className="flex-1 py-6">
           <ul>
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = pathname === item.path;
               return (
                 <li key={item.path} className="mb-2 px-4">
                   <Link
-                    to={item.path}
+                    href={item.path}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                       isActive 
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 

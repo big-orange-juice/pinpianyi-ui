@@ -1,10 +1,8 @@
 
-'use client';
-
 import React from 'react';
 import { AnalysisReport } from '../types';
 import { X, FileText, TrendingUp, TrendingDown, Activity, Target, AlertTriangle, PieChart, BarChart3, MessageCircle, ArrowRight } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppContext } from '../contexts/AppContext';
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +11,7 @@ interface Props {
 }
 
 const AnalysisReportModal: React.FC<Props> = ({ isOpen, onClose, report }) => {
-  const { openAgent } = useAppStore();
+  const { openAgent } = useAppContext();
   
   if (!isOpen || !report) return null;
 
