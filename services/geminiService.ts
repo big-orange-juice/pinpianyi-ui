@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
-import { PriceComparisonRow, StrategyInsight, CompetitorDeepAnalysis, AnalysisReport } from '../types';
+import { PriceComparisonRow, StrategyInsight, CompetitorDeepAnalysis, AnalysisReport, DelegationTaskType, DelegationPriority } from '../types';
 import { MOCK_PRODUCTS as PRODUCTS_DATA, MOCK_COMPETITORS as COMPETITORS_DATA } from '../constants';
 
 const API_KEY = process.env.API_KEY || '';
@@ -81,7 +81,7 @@ const delegationTool: FunctionDeclaration = {
     properties: {
       taskType: {
         type: Type.STRING,
-        enum: ["PRICE_STRATEGY", "COMPETITOR_ANALYSIS", "MARKET_TREND", "PRODUCT_OPTIMIZATION", "RISK_ASSESSMENT"],
+        enum: Object.values(DelegationTaskType),
         description: "The type of analysis task to delegate."
       },
       context: {
@@ -90,7 +90,7 @@ const delegationTool: FunctionDeclaration = {
       },
       priority: {
         type: Type.STRING,
-        enum: ["HIGH", "MEDIUM", "LOW"],
+        enum: Object.values(DelegationPriority),
         description: "Priority level of the delegated task."
       },
       expectedOutcome: {

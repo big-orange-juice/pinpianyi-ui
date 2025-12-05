@@ -3,7 +3,7 @@ import { MessageCircle, X, Send, Paperclip, Bot, User, FileText, Sparkles, Bell,
 import { sendChatMessage, sendToolResponse } from '../services/geminiService';
 import { GenerateContentResponse } from "@google/genai";
 import { useAppContext } from '../contexts/AppContext';
-import { Platform, ActivityType, PriceStatusFilter, Message } from '../types';
+import { Platform, ActivityType, PriceStatusFilter, Message, DELEGATION_TASK_LABELS } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 const AgentAssistant: React.FC = () => {
@@ -152,15 +152,7 @@ const AgentAssistant: React.FC = () => {
                   }]);
               } else if (call.name === 'delegate_analysis_task') {
                   const args = call.args as any;
-                  const taskTypeMap: Record<string, string> = {
-                      'PRICE_STRATEGY': '价格策略制定',
-                      'COMPETITOR_ANALYSIS': '竞品深度分析',
-                      'MARKET_TREND': '市场趋势预测',
-                      'PRODUCT_OPTIMIZATION': '产品优化建议',
-                      'RISK_ASSESSMENT': '风险评估'
-                  };
-                  
-                  const taskName = taskTypeMap[args.taskType] || args.taskType;
+                  const taskName = DELEGATION_TASK_LABELS[args.taskType as keyof typeof DELEGATION_TASK_LABELS] || args.taskType;
                   const priority = args.priority || 'MEDIUM';
                   const priorityEmoji = priority === 'HIGH' ? '🔴' : priority === 'MEDIUM' ? '🟡' : '🟢';
                   
