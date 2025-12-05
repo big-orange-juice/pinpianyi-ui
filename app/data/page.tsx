@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Database,
@@ -121,18 +121,20 @@ const DataCollectionPage: React.FC = () => {
     }
   ]);
 
+  const resolvedActiveTab = useMemo(() => {
+    if (availablePlatforms.length === 0) {
+      return Platform.JD_WANSHANG;
+    }
+    return availablePlatforms.includes(activeTab)
+      ? activeTab
+      : availablePlatforms[0];
+  }, [activeTab, availablePlatforms]);
   const currentPlatformMappedFields = mappedFields.filter(
-    (field) => field.sourcePlatform === activeTab
+    (field) => field.sourcePlatform === resolvedActiveTab
   );
   const currentPlatformPendingFields = pendingReviews.filter(
-    (field) => field.sourcePlatform === activeTab
+    (field) => field.sourcePlatform === resolvedActiveTab
   );
-
-  useEffect(() => {
-    if (!availablePlatforms.includes(activeTab)) {
-      setActiveTab(availablePlatforms[0] || Platform.JD_WANSHANG);
-    }
-  }, [availablePlatforms, activeTab]);
 
   const addToReviewQueue = (newFields: CrawlerField[]) => {
     const uniqueNewFields = newFields.filter(
@@ -168,13 +170,13 @@ const DataCollectionPage: React.FC = () => {
     setTimeout(() => {
       const mockField: CrawlerField = {
         key:
-          activeTab === Platform.JD_WANSHANG
+          resolvedActiveTab === Platform.JD_WANSHANG
             ? 'plus_vip_level_price'
             : 'bulk_purchase_limit',
         label: '未知字段',
         type: 'Number',
         description: 'Detected via Manual Scan',
-        sourcePlatform: activeTab,
+        sourcePlatform: resolvedActiveTab,
         mappingStatus: 'PENDING_REVIEW',
         isMapped: false
       };
@@ -190,7 +192,7 @@ const DataCollectionPage: React.FC = () => {
         label: '未知费用',
         type: 'Number',
         description: 'Detected via Daily Crawler Report',
-        sourcePlatform: activeTab,
+        sourcePlatform: resolvedActiveTab,
         mappingStatus: 'PENDING_REVIEW',
         isMapped: false
       }
@@ -402,7 +404,7 @@ const DataCollectionPage: React.FC = () => {
       label: '',
       localField: '',
       description: '',
-      sourcePlatform: activeTab,
+      sourcePlatform: resolvedActiveTab,
       mappingStatus: 'MAPPED',
       isMapped: true,
       type: 'String'
@@ -421,13 +423,16 @@ const DataCollectionPage: React.FC = () => {
       setMappedFields((prev) =>
         prev.filter(
           (field) =>
-            !(field.key === fieldKey && field.sourcePlatform === activeTab)
+            !(
+              field.key === fieldKey &&
+              field.sourcePlatform === resolvedActiveTab
+            )
         )
       );
       addNotification({
         type: 'INFO',
         title: '字段已删除',
-        message: `字段 [${fieldKey}] 已从 [${activeTab}] 映射表中移除。`
+        message: `字段 [${fieldKey}] 已从 [${resolvedActiveTab}] 映射表中移除。`
       });
     }
   };
@@ -450,7 +455,8 @@ const DataCollectionPage: React.FC = () => {
       if (
         mappedFields.some(
           (field) =>
-            field.key === fieldForm.key && field.sourcePlatform === activeTab
+            field.key === fieldForm.key &&
+            field.sourcePlatform === resolvedActiveTab
         )
       ) {
         window.alert('该 Key 在当前平台已存在');
@@ -579,21 +585,23 @@ const DataCollectionPage: React.FC = () => {
               key={platform}
               onClick={() => setActiveTab(platform)}
               className={`group relative flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all min-w-[200px] ${
-                activeTab === platform
+                resolvedActiveTab === platform
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/20'
                   : 'bg-white/70 text-slate-500 border border-transparent hover:text-slate-800 hover:border-slate-200'
               }`}>
               <Server
                 size={16}
                 className={
-                  activeTab === platform ? 'text-white' : 'text-blue-500/80'
+                  resolvedActiveTab === platform
+                    ? 'text-white'
+                    : 'text-blue-500/80'
                 }
               />
               <span className='truncate'>{platform}</span>
               {pendingCount > 0 && (
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm ${
-                    activeTab === platform
+                    resolvedActiveTab === platform
                       ? 'bg-white/90 text-blue-700'
                       : 'bg-blue-50 text-blue-600'
                   }`}>
@@ -1119,7 +1127,7 @@ const DataCollectionPage: React.FC = () => {
                   个
                 </span>
                 <span className='text-orange-600 opacity-70'>
-                  将在仪表盘"特别关注"视图中展示
+                  将在仪表盘&quot;特别关注&quot;视图中展示
                 </span>
               </div>
               <div className='pt-2 flex gap-3'>
