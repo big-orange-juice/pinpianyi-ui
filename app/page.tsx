@@ -1,68 +1,143 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import KpiCard from '@/components/KpiCard';
-import { AlertTriangle, Zap, Target, Activity, TrendingDown, Search, Download, UserCircle, MapPin, Layout, Tag, DollarSign, Package, AlertCircle, BarChart3, ChevronRight, ShoppingBag, Layers, Award, Star } from 'lucide-react';
-import PriceChart from '@/components/PriceChart';
-import { MOCK_PRODUCTS, MOCK_COMPETITORS, getHistoryData } from '@/constants';
 import Link from 'next/link';
-import { Platform, ProductTag } from '@/types';
+import {
+  AlertTriangle,
+  Target,
+  TrendingDown,
+  UserCircle,
+  MapPin,
+  DollarSign,
+  Star
+} from 'lucide-react';
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Row,
+  Segmented,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Typography
+} from 'antd';
+import KpiCard from '@/components/KpiCard';
+import PriceChart from '@/components/PriceChart';
+import {
+  createAlertColumns,
+  type AlertCategory,
+  type AlertTableRecord
+} from '@/components/dashboard/alertTableColumns';
+import { MOCK_COMPETITORS, MOCK_PRODUCTS, getHistoryData } from '@/constants';
 import { useAppStore } from '@/store/useAppStore';
+import { Platform, ProductTag } from '@/types';
+import {
+  PRODUCT_TAG_OPTIONS,
+  buildSelectOptions,
+  mapProductTags
+} from '@/utils/uiOptions';
 
 type KpiFilterType = 'ALL' | 'LOSING' | 'INVERSION' | 'EST_LOSS' | 'ADVANTAGE';
 
+interface AlertItem {
+  id: string;
+  skuId: string;
+  product: string;
+  spec: string;
+  ourPrice: number;
+  jdPrice?: number;
+  yjpPrice?: number;
+  xsjPrice?: number;
+  minCompPrice: number;
+  gap: number;
+  profit: number;
+  estMarginAfterMatch: number;
+  category: string;
+  type: AlertCategory;
+  tags: ProductTag[];
+  isSpecial: boolean;
+  sortVal: number;
+}
+
+const { Title, Text } = Typography;
+
 const Dashboard: React.FC = () => {
   const [queryInput, setQueryInput] = useState('');
-  const [activeKpiFilter, setActiveKpiFilter] = useState<KpiFilterType>('LOSING');
+  const [activeKpiFilter, setActiveKpiFilter] =
+    useState<KpiFilterType>('LOSING');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
-  const [activeViewMode, setActiveViewMode] = useState<'ALL_TOP' | 'SPECIAL'>('ALL_TOP');
-  const [displayProduct, setDisplayProduct] = useState<{data: any[], name: string}>(getHistoryData('TOP001'));
-  
-  const { 
-      costThreshold, currentUser,
-      selectedTag, setSelectedTag,
-      selectedPlatform, setSelectedPlatform, 
-      availablePlatforms,
-      selectedCategory, setSelectedCategory,
-      selectedBrand, setSelectedBrand,
-      selectedRegion, setSelectedRegion,
-      monitoredProductIds,
-      specialAttentionIds, toggleSpecialAttention
+  const [activeViewMode, setActiveViewMode] = useState<'ALL_TOP' | 'SPECIAL'>(
+    'ALL_TOP'
+  );
+  const [displayProduct, setDisplayProduct] = useState<{
+    data: any[];
+    name: string;
+  }>(getHistoryData('TOP001'));
+
+  const {
+    costThreshold,
+    currentUser,
+    selectedTag,
+    setSelectedTag,
+    selectedPlatform,
+    setSelectedPlatform,
+    availablePlatforms,
+    selectedCategory,
+    setSelectedCategory,
+    selectedBrand,
+    setSelectedBrand,
+    selectedRegion,
+    setSelectedRegion,
+    monitoredProductIds,
+    specialAttentionIds,
+    toggleSpecialAttention
   } = useAppStore();
 
-  const categories = useMemo(() => Array.from(new Set(MOCK_PRODUCTS.map(p => p.category))), []);
-  const brands = useMemo(() => Array.from(new Set(MOCK_PRODUCTS.map(p => p.brand))), []);
+  const categories = useMemo(
+    () => Array.from(new Set(MOCK_PRODUCTS.map((p) => p.category))),
+    []
+  );
+  const brands = useMemo(
+    () => Array.from(new Set(MOCK_PRODUCTS.map((p) => p.brand))),
+    []
+  );
   const regions = useMemo(() => {
     const r = new Set<string>();
-    Object.values(MOCK_COMPETITORS).forEach(arr => arr.forEach(c => r.add(c.region)));
+    Object.values(MOCK_COMPETITORS).forEach((arr) =>
+      arr.forEach((c) => r.add(c.region))
+    );
     return Array.from(r);
   }, []);
 
   const handleHistoryQuery = () => {
-      const result = getHistoryData(queryInput);
-      setDisplayProduct(result);
+    const result = getHistoryData(queryInput);
+    setDisplayProduct(result);
   };
 
   const handleSelectProduct = (skuId: string, alertId: string) => {
-      setSelectedAlertId(alertId);
-      const result = getHistoryData(skuId);
-      setDisplayProduct(result);
+    setSelectedAlertId(alertId);
+    const result = getHistoryData(skuId);
+    setDisplayProduct(result);
   };
 
   const handleKpiClick = (type: KpiFilterType) => {
-      setActiveKpiFilter(prev => prev === type ? 'ALL' : type);
-      setSelectedAlertId(null);
+    setActiveKpiFilter((prev) => (prev === type ? 'ALL' : type));
+    setSelectedAlertId(null);
   };
 
   const regionFilteredCompetitors = useMemo(() => {
-      const filteredComps: Record<string, any[]> = {};
-      Object.keys(MOCK_COMPETITORS).forEach(skuId => {
-          filteredComps[skuId] = MOCK_COMPETITORS[skuId].filter(c => 
-              (selectedRegion === 'ALL' || c.region === selectedRegion) && 
-              (selectedPlatform === 'ALL' || c.platform === selectedPlatform)
-          );
-      });
-      return filteredComps;
+    const filteredComps: Record<string, any[]> = {};
+    Object.keys(MOCK_COMPETITORS).forEach((skuId) => {
+      filteredComps[skuId] = MOCK_COMPETITORS[skuId].filter(
+        (c) =>
+          (selectedRegion === 'ALL' || c.region === selectedRegion) &&
+          (selectedPlatform === 'ALL' || c.platform === selectedPlatform)
+      );
+    });
+    return filteredComps;
   }, [selectedRegion, selectedPlatform]);
 
   const kpis = useMemo(() => {
@@ -71,312 +146,351 @@ const Dashboard: React.FC = () => {
     let priceAdvantageCount = 0;
     let totalEstDailyLoss = 0;
 
-    MOCK_PRODUCTS.forEach(p => {
-        if (monitoredProductIds.length > 0 && !monitoredProductIds.includes(p.id)) return;
-        if (activeViewMode === 'SPECIAL' && !specialAttentionIds.includes(p.id)) return;
-        if (selectedTag !== 'ALL' && (!p.tags || !p.tags.includes(selectedTag as ProductTag))) return;
-        if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return;
-        if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return;
+    MOCK_PRODUCTS.forEach((p) => {
+      if (monitoredProductIds.length > 0 && !monitoredProductIds.includes(p.id))
+        return;
+      if (activeViewMode === 'SPECIAL' && !specialAttentionIds.includes(p.id))
+        return;
+      if (
+        selectedTag !== 'ALL' &&
+        (!p.tags || !p.tags.includes(selectedTag as ProductTag))
+      )
+        return;
+      if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return;
+      if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return;
 
-        const comps = regionFilteredCompetitors[p.id] || [];
-        if (comps.length === 0) return;
+      const comps = regionFilteredCompetitors[p.id] || [];
+      if (comps.length === 0) return;
 
-        if (p.ourPrice < p.ourCost) {
-            inversionCount++;
-        }
+      if (p.ourPrice < p.ourCost) {
+        inversionCount++;
+      }
 
-        const minCompPrice = Math.min(...comps.map(c => c.activityPrice));
-        
-        if (p.ourPrice > minCompPrice) {
-            priceDisadvantageCount++;
-            const gap = p.ourPrice - minCompPrice;
-            totalEstDailyLoss += gap * (p.last7DaysSales / 7);
-        }
+      const minCompPrice = Math.min(...comps.map((c) => c.activityPrice));
 
-        if (p.ourPrice < minCompPrice) {
-            priceAdvantageCount++;
-        }
+      if (p.ourPrice > minCompPrice) {
+        priceDisadvantageCount++;
+        const gap = p.ourPrice - minCompPrice;
+        totalEstDailyLoss += gap * (p.last7DaysSales / 7);
+      }
+
+      if (p.ourPrice < minCompPrice) {
+        priceAdvantageCount++;
+      }
     });
 
-    return { inversionCount, priceDisadvantageCount, priceAdvantageCount, totalEstDailyLoss };
-  }, [regionFilteredCompetitors, selectedTag, selectedCategory, selectedBrand, monitoredProductIds, activeViewMode, specialAttentionIds]);
+    return {
+      inversionCount,
+      priceDisadvantageCount,
+      priceAdvantageCount,
+      totalEstDailyLoss
+    };
+  }, [
+    regionFilteredCompetitors,
+    selectedTag,
+    selectedCategory,
+    selectedBrand,
+    monitoredProductIds,
+    activeViewMode,
+    specialAttentionIds
+  ]);
 
-  const alerts = useMemo(() => {
-      const list: any[] = [];
-      MOCK_PRODUCTS.forEach(p => {
-          if (monitoredProductIds.length > 0 && !monitoredProductIds.includes(p.id)) return;
-          if (activeViewMode === 'SPECIAL' && !specialAttentionIds.includes(p.id)) return;
-          if (selectedTag !== 'ALL' && (!p.tags || !p.tags.includes(selectedTag as ProductTag))) return;
-          if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return;
-          if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return;
+  const alerts = useMemo<AlertItem[]>(() => {
+    const list: AlertItem[] = [];
+    MOCK_PRODUCTS.forEach((p) => {
+      if (monitoredProductIds.length > 0 && !monitoredProductIds.includes(p.id))
+        return;
+      if (activeViewMode === 'SPECIAL' && !specialAttentionIds.includes(p.id))
+        return;
+      if (
+        selectedTag !== 'ALL' &&
+        (!p.tags || !p.tags.includes(selectedTag as ProductTag))
+      )
+        return;
+      if (selectedCategory !== 'ALL' && p.category !== selectedCategory) return;
+      if (selectedBrand !== 'ALL' && p.brand !== selectedBrand) return;
 
-          const comps = regionFilteredCompetitors[p.id] || [];
-          if (comps.length === 0) return;
+      const comps = regionFilteredCompetitors[p.id] || [];
+      if (comps.length === 0) return;
 
-          const minCompPrice = Math.min(...comps.map(c => c.activityPrice));
-          const jdComp = comps.find(c => c.platform.includes('京东'));
-          const yjpComp = comps.find(c => c.platform.includes('易久批'));
-          const xsjComp = comps.find(c => c.platform.includes('鲜世纪'));
+      const minCompPrice = Math.min(...comps.map((c) => c.activityPrice));
+      const jdComp = comps.find((c) => c.platform.includes('京东'));
+      const yjpComp = comps.find((c) => c.platform.includes('易久批'));
+      const xsjComp = comps.find((c) => c.platform.includes('鲜世纪'));
 
-          const gap = p.ourPrice - minCompPrice;
-          const profit = p.ourPrice - p.ourCost;
-          const isInternalInversion = p.ourPrice < p.ourCost;
-          const isLosing = p.ourPrice > minCompPrice;
-          const isWinning = p.ourPrice < minCompPrice;
-          const isSpecial = specialAttentionIds.includes(p.id);
+      const gap = p.ourPrice - minCompPrice;
+      const profit = p.ourPrice - p.ourCost;
+      const isInternalInversion = p.ourPrice < p.ourCost;
+      const isLosing = p.ourPrice > minCompPrice;
+      const isWinning = p.ourPrice < minCompPrice;
+      const isSpecial = specialAttentionIds.includes(p.id);
 
-          const baseData = {
-              id: p.id,
-              skuId: p.id,
-              product: p.name,
-              spec: p.spec,
-              ourPrice: p.ourPrice,
-              cost: p.ourCost,
-              jdPrice: jdComp?.activityPrice,
-              yjpPrice: yjpComp?.activityPrice,
-              xsjPrice: xsjComp?.activityPrice,
-              minCompPrice,
-              gap,
-              profit,
-              estMarginAfterMatch: isLosing ? (minCompPrice - p.ourCost) : profit,
-              tags: p.tags || [],
-              isSpecial
-          };
+      const baseData: AlertItem = {
+        id: p.id,
+        skuId: p.id,
+        product: p.name,
+        spec: p.spec,
+        ourPrice: p.ourPrice,
+        jdPrice: jdComp?.activityPrice,
+        yjpPrice: yjpComp?.activityPrice,
+        xsjPrice: xsjComp?.activityPrice,
+        minCompPrice,
+        gap,
+        profit,
+        estMarginAfterMatch: isLosing ? minCompPrice - p.ourCost : profit,
+        tags: mapProductTags(p.tags),
+        isSpecial,
+        type: 'LOSING',
+        category: '价格劣势',
+        sortVal: gap
+      };
 
-          if (isInternalInversion) {
-               list.push({ ...baseData, type: 'INVERSION', category: '成本倒挂', sortVal: profit });
-          }
-          if (isLosing) {
-               list.push({ ...baseData, type: 'LOSING', category: '价格劣势', sortVal: gap });
-          }
-          if (isWinning) {
-               list.push({ ...baseData, type: 'ADVANTAGE', category: '价格优势', sortVal: gap });
-          }
-      });
-      
-      let filtered = list;
-      if (activeKpiFilter === 'LOSING') filtered = list.filter(i => i.type === 'LOSING');
-      else if (activeKpiFilter === 'INVERSION') filtered = list.filter(i => i.type === 'INVERSION');
-      else if (activeKpiFilter === 'ADVANTAGE') filtered = list.filter(i => i.type === 'ADVANTAGE');
-      else if (activeKpiFilter === 'EST_LOSS') filtered = list.filter(i => i.type === 'LOSING');
-
-      if (activeKpiFilter === 'INVERSION') {
-          return filtered.sort((a,b) => a.profit - b.profit);
+      if (isInternalInversion) {
+        list.push({
+          ...baseData,
+          type: 'INVERSION',
+          category: '成本倒挂',
+          sortVal: profit
+        });
       }
-      return filtered.sort((a,b) => b.sortVal - a.sortVal);
-  }, [regionFilteredCompetitors, selectedTag, selectedCategory, selectedBrand, monitoredProductIds, activeViewMode, specialAttentionIds, activeKpiFilter]);
+      if (isLosing) {
+        list.push({
+          ...baseData,
+          type: 'LOSING',
+          category: '价格劣势',
+          sortVal: gap
+        });
+      }
+      if (isWinning) {
+        list.push({
+          ...baseData,
+          type: 'ADVANTAGE',
+          category: '价格优势',
+          sortVal: gap
+        });
+      }
+    });
+
+    let filtered = list;
+    if (activeKpiFilter === 'LOSING')
+      filtered = list.filter((i) => i.type === 'LOSING');
+    else if (activeKpiFilter === 'INVERSION')
+      filtered = list.filter((i) => i.type === 'INVERSION');
+    else if (activeKpiFilter === 'ADVANTAGE')
+      filtered = list.filter((i) => i.type === 'ADVANTAGE');
+    else if (activeKpiFilter === 'EST_LOSS')
+      filtered = list.filter((i) => i.type === 'LOSING');
+
+    if (activeKpiFilter === 'INVERSION') {
+      return filtered.sort((a, b) => a.profit - b.profit);
+    }
+    return filtered.sort((a, b) => b.sortVal - a.sortVal);
+  }, [
+    regionFilteredCompetitors,
+    selectedTag,
+    selectedCategory,
+    selectedBrand,
+    monitoredProductIds,
+    activeViewMode,
+    specialAttentionIds,
+    activeKpiFilter
+  ]);
+
+  const alertTableData = useMemo<AlertTableRecord[]>(
+    () => alerts.map((alert, idx) => ({ ...alert, key: `${alert.id}-${idx}` })),
+    [alerts]
+  );
+
+  const columns = useMemo(
+    () => createAlertColumns(toggleSpecialAttention),
+    [toggleSpecialAttention]
+  );
+
+  const tableTitleMap: Record<KpiFilterType, string> = {
+    ALL: '全部预警',
+    LOSING: '价格劣势列表',
+    INVERSION: '成本倒挂列表',
+    ADVANTAGE: '价格优势列表',
+    EST_LOSS: '损失排行'
+  };
+
+  const segmentedOptions = [
+    { label: '全部商品', value: 'ALL_TOP' },
+    {
+      label: (
+        <Space size={4}>
+          <Star size={12} /> 关注
+        </Space>
+      ),
+      value: 'SPECIAL'
+    }
+  ];
 
   return (
-    <div className="p-8 animate-fade-in">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800">运营仪表盘</h1>
-            <p className="text-slate-500 mt-1 flex items-center gap-2">
-              <UserCircle size={16} /> {currentUser.name} · {currentUser.role}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg flex items-center gap-2 font-medium text-sm">
-              <MapPin size={16} /> {selectedRegion} 大区
-            </div>
-            <Link href="/analysis">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm">
-                <BarChart3 size={16} /> 深度分析
-              </button>
-            </Link>
-          </div>
+    <div className='p-8 animate-fade-in space-y-8'>
+      <div className='flex flex-wrap gap-4 justify-between'>
+        <div>
+          <Title level={2} className='!m-0 text-slate-800'>
+            运营仪表盘
+          </Title>
+          <Space size='small' className='text-slate-500 mt-1'>
+            <UserCircle size={16} />
+            <span>
+              {currentUser.name} · {currentUser.role}
+            </span>
+          </Space>
         </div>
+        <Space size='middle' wrap className='justify-end'>
+          <Tag
+            color='blue'
+            className='px-3 py-2 text-sm flex items-center gap-2'
+            bordered={false}>
+            <MapPin size={14} /> {selectedRegion} 大区
+          </Tag>
+          <Input.Search
+            allowClear
+            placeholder='输入SKU或名称查看历史曲线'
+            value={queryInput}
+            onChange={(e) => setQueryInput(e.target.value)}
+            onSearch={() => handleHistoryQuery()}
+            className='w-64'
+          />
+          <Link href='/analysis' className='inline-block'>
+            <Button type='primary' size='large'>
+              深度分析
+            </Button>
+          </Link>
+        </Space>
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
-        <select 
-          value={selectedRegion}
-          onChange={(e) => setSelectedRegion(e.target.value)}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="ALL">全部区域</option>
-          {regions.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+      <Card>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              size='large'
+              value={selectedRegion}
+              onChange={(val) => setSelectedRegion(val)}
+              options={buildSelectOptions(regions, '全部区域')}
+              className='w-full'
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              size='large'
+              value={selectedPlatform}
+              onChange={(val) => setSelectedPlatform(val as Platform | 'ALL')}
+              options={buildSelectOptions(availablePlatforms, '全部平台')}
+              className='w-full'
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              size='large'
+              value={selectedCategory}
+              onChange={(val) => setSelectedCategory(val)}
+              options={buildSelectOptions(categories, '全部品类')}
+              className='w-full'
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              size='large'
+              value={selectedBrand}
+              onChange={(val) => setSelectedBrand(val)}
+              options={buildSelectOptions(brands, '全部品牌')}
+              className='w-full'
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Select
+              size='large'
+              value={selectedTag}
+              onChange={(val) => setSelectedTag(val as ProductTag | 'ALL')}
+              options={PRODUCT_TAG_OPTIONS}
+              className='w-full'
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={4}>
+            <Segmented
+              size='large'
+              block
+              value={activeViewMode}
+              options={segmentedOptions}
+              onChange={(val) =>
+                setActiveViewMode(val as 'ALL_TOP' | 'SPECIAL')
+              }
+            />
+          </Col>
+        </Row>
+      </Card>
 
-        <select 
-          value={selectedPlatform}
-          onChange={(e) => setSelectedPlatform(e.target.value as Platform | 'ALL')}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="ALL">全部平台</option>
-          {availablePlatforms.map(p => <option key={p} value={p}>{p}</option>)}
-        </select>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} lg={6}>
+          <KpiCard
+            title='价格劣势商品'
+            value={kpis.priceDisadvantageCount}
+            icon={<TrendingDown size={24} />}
+            color='red'
+            onClick={() => handleKpiClick('LOSING')}
+            isActive={activeKpiFilter === 'LOSING'}
+          />
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <KpiCard
+            title='成本倒挂预警'
+            value={kpis.inversionCount}
+            icon={<AlertTriangle size={24} />}
+            color='orange'
+            onClick={() => handleKpiClick('INVERSION')}
+            isActive={activeKpiFilter === 'INVERSION'}
+          />
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <KpiCard
+            title='价格优势商品'
+            value={kpis.priceAdvantageCount}
+            icon={<Target size={24} />}
+            color='green'
+            onClick={() => handleKpiClick('ADVANTAGE')}
+            isActive={activeKpiFilter === 'ADVANTAGE'}
+          />
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <KpiCard
+            title='预估日损失'
+            value={`¥${kpis.totalEstDailyLoss.toFixed(0)}`}
+            icon={<DollarSign size={24} />}
+            color='blue'
+            onClick={() => handleKpiClick('EST_LOSS')}
+            isActive={activeKpiFilter === 'EST_LOSS'}
+          />
+        </Col>
+      </Row>
 
-        <select 
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="ALL">全部品类</option>
-          {categories.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+      <PriceChart
+        data={displayProduct.data}
+        title='价格走势分析'
+        productName={displayProduct.name}
+      />
 
-        <select 
-          value={selectedBrand}
-          onChange={(e) => setSelectedBrand(e.target.value)}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="ALL">全部品牌</option>
-          {brands.map(b => <option key={b} value={b}>{b}</option>)}
-        </select>
-
-        <select 
-          value={selectedTag}
-          onChange={(e) => setSelectedTag(e.target.value as ProductTag | 'ALL')}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="ALL">全部标签</option>
-          <option value="爆品">爆品</option>
-          <option value="新品">新品</option>
-          <option value="高库存风险">高库存风险</option>
-          <option value="常规">常规</option>
-        </select>
-
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setActiveViewMode('ALL_TOP')}
-            className={`flex-1 px-3 py-2 text-xs font-bold rounded-lg transition-all ${activeViewMode === 'ALL_TOP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-          >
-            全部商品
-          </button>
-          <button 
-            onClick={() => setActiveViewMode('SPECIAL')}
-            className={`flex-1 px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${activeViewMode === 'SPECIAL' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-          >
-            <Star size={12} /> 关注
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiCard 
-          title="价格劣势商品"
-          value={kpis.priceDisadvantageCount}
-          icon={<TrendingDown size={24} />}
-          color="red"
-          onClick={() => handleKpiClick('LOSING')}
-          isActive={activeKpiFilter === 'LOSING'}
+      <Card
+        title={tableTitleMap[activeKpiFilter]}
+        extra={<Text type='secondary'>共 {alerts.length} 条记录</Text>}>
+        <Table
+          columns={columns}
+          dataSource={alertTableData}
+          pagination={false}
+          scroll={{ x: 1100 }}
+          rowClassName={(record) =>
+            record.key === selectedAlertId
+              ? 'alert-row-selected cursor-pointer'
+              : 'cursor-pointer'
+          }
+          onRow={(record) => ({
+            onClick: () => handleSelectProduct(record.skuId, record.key)
+          })}
         />
-        <KpiCard 
-          title="成本倒挂预警"
-          value={kpis.inversionCount}
-          icon={<AlertTriangle size={24} />}
-          color="orange"
-          onClick={() => handleKpiClick('INVERSION')}
-          isActive={activeKpiFilter === 'INVERSION'}
-        />
-        <KpiCard 
-          title="价格优势商品"
-          value={kpis.priceAdvantageCount}
-          icon={<Target size={24} />}
-          color="green"
-          onClick={() => handleKpiClick('ADVANTAGE')}
-          isActive={activeKpiFilter === 'ADVANTAGE'}
-        />
-        <KpiCard 
-          title="预估日损失"
-          value={`¥${kpis.totalEstDailyLoss.toFixed(0)}`}
-          icon={<DollarSign size={24} />}
-          color="blue"
-          onClick={() => handleKpiClick('EST_LOSS')}
-          isActive={activeKpiFilter === 'EST_LOSS'}
-        />
-      </div>
-
-      {/* Chart */}
-      <div className="mb-8">
-        <PriceChart 
-          data={displayProduct.data}
-          title="价格走势分析"
-          productName={displayProduct.name}
-        />
-      </div>
-
-      {/* Alerts List */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800">
-            {activeKpiFilter === 'ALL' && '全部预警'}
-            {activeKpiFilter === 'LOSING' && '价格劣势列表'}
-            {activeKpiFilter === 'INVERSION' && '成本倒挂列表'}
-            {activeKpiFilter === 'ADVANTAGE' && '价格优势列表'}
-            {activeKpiFilter === 'EST_LOSS' && '损失排行'}
-          </h3>
-          <p className="text-sm text-slate-500 mt-1">共 {alerts.length} 条记录</p>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left p-4 font-semibold text-slate-600">商品</th>
-                <th className="text-right p-4 font-semibold text-slate-600">我方价格</th>
-                <th className="text-right p-4 font-semibold text-slate-600">京东</th>
-                <th className="text-right p-4 font-semibold text-slate-600">易久批</th>
-                <th className="text-right p-4 font-semibold text-slate-600">鲜世纪</th>
-                <th className="text-right p-4 font-semibold text-slate-600">价差</th>
-                <th className="text-right p-4 font-semibold text-slate-600">状态</th>
-                <th className="text-center p-4 font-semibold text-slate-600">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alerts.map((alert, idx) => (
-                <tr 
-                  key={`${alert.id}-${idx}`} 
-                  className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${selectedAlertId === `${alert.id}-${idx}` ? 'bg-blue-50' : ''}`}
-                  onClick={() => handleSelectProduct(alert.skuId, `${alert.id}-${idx}`)}
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      {alert.isSpecial && <Star size={14} className="text-orange-500 fill-orange-500" />}
-                      <div>
-                        <div className="font-medium text-slate-800">{alert.product}</div>
-                        <div className="text-xs text-slate-500">{alert.spec}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-right font-mono text-slate-800">¥{alert.ourPrice}</td>
-                  <td className="p-4 text-right font-mono text-slate-600">{alert.jdPrice ? `¥${alert.jdPrice}` : '-'}</td>
-                  <td className="p-4 text-right font-mono text-slate-600">{alert.yjpPrice ? `¥${alert.yjpPrice}` : '-'}</td>
-                  <td className="p-4 text-right font-mono text-slate-600">{alert.xsjPrice ? `¥${alert.xsjPrice}` : '-'}</td>
-                  <td className={`p-4 text-right font-mono font-bold ${alert.gap > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {alert.gap > 0 ? '+' : ''}{alert.gap.toFixed(2)}
-                  </td>
-                  <td className="p-4 text-right">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      alert.type === 'INVERSION' ? 'bg-orange-100 text-orange-700' :
-                      alert.type === 'LOSING' ? 'bg-red-100 text-red-700' :
-                      'bg-green-100 text-green-700'
-                    }`}>
-                      {alert.category}
-                    </span>
-                  </td>
-                  <td className="p-4 text-center">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSpecialAttention(alert.id);
-                      }}
-                      className="p-1 hover:bg-slate-100 rounded transition-colors"
-                    >
-                      <Star size={16} className={alert.isSpecial ? 'text-orange-500 fill-orange-500' : 'text-slate-400'} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 };

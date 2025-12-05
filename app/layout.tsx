@@ -1,6 +1,9 @@
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
+import 'antd/dist/reset.css';
+
 import AgentAssistant from '@/components/AgentAssistant';
+import AntdProvider from '@/components/AntdProvider';
+import Sidebar from '@/components/Sidebar';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({
@@ -20,11 +23,13 @@ export default function RootLayout({
         <title>拼便宜商品运营Agent</title>
       </head>
       <body className={`bg-slate-50 ${inter.className}`}>
-        <div className='flex min-h-screen'>
-          <Sidebar />
-          <div className='flex-1 ml-64'>{children}</div>
-          <AgentAssistant />
-        </div>
+        <AntdProvider>
+          <div className='flex min-h-screen bg-slate-50'>
+            <Sidebar />
+            <main className='flex-1 ml-64'>{children}</main>
+            <AgentAssistant />
+          </div>
+        </AntdProvider>
       </body>
     </html>
   );
