@@ -3,7 +3,7 @@ import { MessageCircle, X, Send, Paperclip, Bot, User, FileText, Sparkles, Bell,
 import { sendChatMessage, sendToolResponse } from '../services/geminiService';
 import { GenerateContentResponse } from "@google/genai";
 import { useAppContext } from '../contexts/AppContext';
-import { Platform, ActivityType, PriceStatusFilter, Message } from '../types';
+import { Platform, ActivityType, PriceStatusFilter, Message, DELEGATION_TASK_LABELS } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 const AgentAssistant: React.FC = () => {
@@ -144,6 +144,20 @@ const AgentAssistant: React.FC = () => {
                   
                   const displayMsg = `已为您自动筛选 [${filterDesc.trim() || '全部数据'}]，并跳转至分析矩阵。`;
                   toolOutputs.push("Success");
+                  
+                  setMessages(prev => [...prev, { 
+                      role: 'assistant', 
+                      content: `⚡ ${displayMsg}`, 
+                      isToolUse: true 
+                  }]);
+              } else if (call.name === 'delegate_analysis_task') {
+                  const args = call.args as any;
+                  const taskName = DELEGATION_TASK_LABELS[args.taskType as keyof typeof DELEGATION_TASK_LABELS] || args.taskType;
+                  const priority = args.priority || 'MEDIUM';
+                  const priorityEmoji = priority === 'HIGH' ? '🔴' : priority === 'MEDIUM' ? '🟡' : '🟢';
+                  
+                  const displayMsg = `${priorityEmoji} 已接受委派：【${taskName}】\n📋 任务上下文：${args.context}\n🎯 预期产出：${args.expectedOutcome || '深度分析报告'}`;
+                  toolOutputs.push(`Delegation accepted: ${taskName}. Processing with ${priority} priority.`);
                   
                   setMessages(prev => [...prev, { 
                       role: 'assistant', 
