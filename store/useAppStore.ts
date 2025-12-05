@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Platform, ActivityType, PriceStatusFilter, Message, SystemNotification, ChatSession, AnalysisReport, ProductTag } from '../types';
+import { Platform, ActivityType, PriceStatusFilter, Message, SystemNotification, ChatSession, AnalysisReport, ProductTag, DelegationTaskType, DELEGATION_TASK_LABELS } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 
 interface UserProfile {
@@ -73,6 +73,9 @@ interface AppState {
   // Dynamic Platforms
   availablePlatforms: string[];
   addPlatform: (p: string) => void;
+
+  // Delegation
+  delegateToAgent: (productName: string, productId: string, taskType: DelegationTaskType, customInstructions?: string) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -217,4 +220,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       ? state.availablePlatforms 
       : [...state.availablePlatforms, p]
   })),
+
+  // Delegation function
+  delegateToAgent: (productName, productId, taskType, customInstructions) => {
+    const taskLabel = DELEGATION_TASK_LABELS[taskType];
+    let message = `请帮我${taskLabel}：\n\n商品：${productName}\nSKU ID：${productId}`;
+    
+    if (customInstructions) {
+      message += `\n\n补充说明：${customInstructions}`;
+    }
+    
+    message += '\n\n请提供详细的分析和建议。';
+    
+    // Open agent with pre-filled message
+    set({ 
+      agentOpenState: true,
+      agentInputMessage: message
+    });
+    
+    // Add notification
+    get().addNotification({
+      type: 'INFO',
+      title: '已委派任务',
+      message: `已将「${productName}」的${taskLabel}任务委派给云智能体`
+    });
+  }
 }));

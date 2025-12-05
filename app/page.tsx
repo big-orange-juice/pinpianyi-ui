@@ -2,11 +2,12 @@
 
 import React, { useMemo, useState } from 'react';
 import KpiCard from '@/components/KpiCard';
-import { AlertTriangle, Zap, Target, Activity, TrendingDown, Search, Download, UserCircle, MapPin, Layout, Tag, DollarSign, Package, AlertCircle, BarChart3, ChevronRight, ShoppingBag, Layers, Award, Star } from 'lucide-react';
+import DelegationModal from '@/components/DelegationModal';
+import { AlertTriangle, Zap, Target, Activity, TrendingDown, Search, Download, UserCircle, MapPin, Layout, Tag, DollarSign, Package, AlertCircle, BarChart3, ChevronRight, ShoppingBag, Layers, Award, Star, Bot } from 'lucide-react';
 import PriceChart from '@/components/PriceChart';
 import { MOCK_PRODUCTS, MOCK_COMPETITORS, getHistoryData } from '@/constants';
 import Link from 'next/link';
-import { Platform, ProductTag } from '@/types';
+import { Platform, ProductTag, DelegationTaskType } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 
 type KpiFilterType = 'ALL' | 'LOSING' | 'INVERSION' | 'EST_LOSS' | 'ADVANTAGE';
@@ -17,6 +18,8 @@ const Dashboard: React.FC = () => {
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [activeViewMode, setActiveViewMode] = useState<'ALL_TOP' | 'SPECIAL'>('ALL_TOP');
   const [displayProduct, setDisplayProduct] = useState<{data: any[], name: string}>(getHistoryData('TOP001'));
+  const [isDelegationModalOpen, setIsDelegationModalOpen] = useState(false);
+  const [delegationTarget, setDelegationTarget] = useState<{ productName: string; productId: string } | null>(null);
   
   const { 
       costThreshold, currentUser,
@@ -27,7 +30,8 @@ const Dashboard: React.FC = () => {
       selectedBrand, setSelectedBrand,
       selectedRegion, setSelectedRegion,
       monitoredProductIds,
-      specialAttentionIds, toggleSpecialAttention
+      specialAttentionIds, toggleSpecialAttention,
+      delegateToAgent
   } = useAppStore();
 
   const categories = useMemo(() => Array.from(new Set(MOCK_PRODUCTS.map(p => p.category))), []);
@@ -52,6 +56,17 @@ const Dashboard: React.FC = () => {
   const handleKpiClick = (type: KpiFilterType) => {
       setActiveKpiFilter(prev => prev === type ? 'ALL' : type);
       setSelectedAlertId(null);
+  };
+
+  const handleOpenDelegation = (productName: string, productId: string) => {
+    setDelegationTarget({ productName, productId });
+    setIsDelegationModalOpen(true);
+  };
+
+  const handleDelegate = (taskType: DelegationTaskType, customInstructions?: string) => {
+    if (delegationTarget) {
+      delegateToAgent(delegationTarget.productName, delegationTarget.productId, taskType, customInstructions);
+    }
   };
 
   const regionFilteredCompetitors = useMemo(() => {
@@ -361,15 +376,28 @@ const Dashboard: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSpecialAttention(alert.id);
-                      }}
-                      className="p-1 hover:bg-slate-100 rounded transition-colors"
-                    >
-                      <Star size={16} className={alert.isSpecial ? 'text-orange-500 fill-orange-500' : 'text-slate-400'} />
-                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSpecialAttention(alert.id);
+                        }}
+                        className="p-1 hover:bg-slate-100 rounded transition-colors"
+                        title="关注"
+                      >
+                        <Star size={16} className={alert.isSpecial ? 'text-orange-500 fill-orange-500' : 'text-slate-400'} />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDelegation(alert.product, alert.id);
+                        }}
+                        className="p-1 hover:bg-blue-100 rounded transition-colors text-blue-600"
+                        title="委派给云智能体"
+                      >
+                        <Bot size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -377,6 +405,17 @@ const Dashboard: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Delegation Modal */}
+      {delegationTarget && (
+        <DelegationModal
+          isOpen={isDelegationModalOpen}
+          onClose={() => setIsDelegationModalOpen(false)}
+          productName={delegationTarget.productName}
+          productId={delegationTarget.productId}
+          onDelegate={handleDelegate}
+        />
+      )}
     </div>
   );
 };
