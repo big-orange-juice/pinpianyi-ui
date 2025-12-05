@@ -153,7 +153,7 @@ export interface RawCompetitorRow {
   
   // XSJ Fields
   xsj_price?: number;
-  xsj_limit_num?: number;
+  xsj_limit_num?: number | null;
   xsj_prod_date?: string;
   
   // YJP Fields
