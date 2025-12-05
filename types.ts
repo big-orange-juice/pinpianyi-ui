@@ -42,6 +42,30 @@ export type ProductTag = '新品' | '爆品' | '高库存风险' | '常规';
 
 export type SellThroughStatus = 'FAST' | 'MEDIUM' | 'SLOW' | 'STAGNANT';
 
+// Delegation Task Types
+export enum DelegationTaskType {
+  PRICE_STRATEGY = 'PRICE_STRATEGY',
+  COMPETITOR_ANALYSIS = 'COMPETITOR_ANALYSIS',
+  MARKET_TREND = 'MARKET_TREND',
+  PRODUCT_OPTIMIZATION = 'PRODUCT_OPTIMIZATION',
+  RISK_ASSESSMENT = 'RISK_ASSESSMENT'
+}
+
+export enum DelegationPriority {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW'
+}
+
+// Task type labels for display
+export const DELEGATION_TASK_LABELS: Record<DelegationTaskType, string> = {
+  [DelegationTaskType.PRICE_STRATEGY]: '价格策略制定',
+  [DelegationTaskType.COMPETITOR_ANALYSIS]: '竞品深度分析',
+  [DelegationTaskType.MARKET_TREND]: '市场趋势预测',
+  [DelegationTaskType.PRODUCT_OPTIMIZATION]: '产品优化建议',
+  [DelegationTaskType.RISK_ASSESSMENT]: '风险评估'
+};
+
 // --- Internal App Model ---
 
 export interface Product {
