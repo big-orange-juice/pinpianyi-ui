@@ -9,7 +9,8 @@ import {
   Database,
   Settings,
   AlertTriangle,
-  SlidersHorizontal
+  SlidersHorizontal,
+  MessageSquare
 } from 'lucide-react';
 import { Button, Form, InputNumber, Menu, Modal, Typography } from 'antd';
 import { useAppStore } from '@/store/useAppStore';
@@ -24,6 +25,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { path: '/', label: '仪表盘', icon: <LayoutDashboard size={18} /> },
+    { path: '/chat', label: 'AI 对话', icon: <MessageSquare size={18} /> },
     {
       path: '/analysis',
       label: '价盘分析矩阵',
@@ -104,7 +106,7 @@ const Sidebar: React.FC = () => {
         centered
         onOk={handleSaveSettings}
         onCancel={() => setIsSettingsOpen(false)}
-        destroyOnClose>
+        destroyOnHidden>
         <Form layout='vertical' size='large'>
           <Form.Item
             label={

@@ -8,6 +8,7 @@ import React, {
   useCallback
 } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button, Card, Select, Input, Slider, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -152,6 +153,7 @@ const GapDistributionChart: React.FC<{
 };
 
 const PriceAnalysisPage = () => {
+  const router = useRouter();
   const [selectedBarFilter, setSelectedBarFilter] = useState<string | null>(
     null
   );
@@ -1224,9 +1226,10 @@ const PriceAnalysisPage = () => {
                   <Button
                     size='small'
                     type='text'
-                    onClick={() =>
-                      openAgent('请帮我解读价盘分析矩阵左侧的分布图。')
-                    }>
+                    onClick={() => {
+                      openAgent('请帮我解读价盘分析矩阵左侧的分布图。');
+                      router.push('/chat');
+                    }}>
                     AI 解读
                   </Button>
                 )
@@ -1245,7 +1248,7 @@ const PriceAnalysisPage = () => {
           <div className='xl:col-span-3'>
             <Card
               className='shadow-lg border-0 bg-white/95 backdrop-blur rounded-2xl'
-              bodyStyle={{ padding: 0 }}>
+              styles={{ body: { padding: 0 } }}>
               <Table
                 size='small'
                 columns={resolvedColumns}

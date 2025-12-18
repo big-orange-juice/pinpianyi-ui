@@ -344,7 +344,7 @@ const Dashboard: React.FC = () => {
           <Tag
             color='blue'
             className='px-3 py-2 text-sm flex items-center gap-2'
-            bordered={false}>
+            variant='filled'>
             <MapPin size={14} /> {selectedRegion} 大区
           </Tag>
           <Input.Search

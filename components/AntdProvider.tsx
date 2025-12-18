@@ -19,7 +19,8 @@ const themeConfig: ThemeConfig = {
     colorBgContainer: palette.surface,
     colorBorder: palette.border,
     fontFamily:
-      'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      '"Heiti SC", "Hiragino Sans GB", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontSize: 14,
     borderRadius: 12
   },
   components: {

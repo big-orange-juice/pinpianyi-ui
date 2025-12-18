@@ -48,7 +48,7 @@ export const createAlertColumns = (
                 <Tag
                   key={`${record.id}-${tag}`}
                   color='blue'
-                  bordered={false}
+                  variant='filled'
                   className='text-xs'>
                   {tag}
                 </Tag>
@@ -123,7 +123,7 @@ export const createAlertColumns = (
           ? 'red'
           : 'green';
       return (
-        <Tag color={statusColor} bordered={false} className='font-semibold'>
+        <Tag color={statusColor} variant='filled' className='font-semibold'>
           {record.category}
         </Tag>
       );

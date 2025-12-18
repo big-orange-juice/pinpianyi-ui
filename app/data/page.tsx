@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Database,
   Server,
@@ -38,6 +39,7 @@ const LOCAL_SYSTEM_FIELDS = [
 ];
 
 const DataCollectionPage: React.FC = () => {
+  const router = useRouter();
   const {
     openAgent,
     addNotification,
@@ -232,6 +234,7 @@ const DataCollectionPage: React.FC = () => {
     openAgent(
       `我刚刚导入了新竞品平台【${newPlatformName}】的 ${newFields.length} 个字段，请帮我进行清洗和映射建议。`
     );
+    router.push('/chat');
   };
 
   const closeImportModal = () => {
@@ -268,6 +271,7 @@ const DataCollectionPage: React.FC = () => {
     openAgent(
       `已成功导入 ${allIds.length} 个重点关注品，其中 ${specialIds.length} 个已标记为【特别关注】。仪表盘已根据您的导入列表进行更新。`
     );
+    router.push('/chat');
     closeImportModal();
   };
 
@@ -298,6 +302,7 @@ const DataCollectionPage: React.FC = () => {
     openAgent(
       `特别关注商品列表已更新，当前共关注 ${currentSpecialSet.size} 个重点 SKU。`
     );
+    router.push('/chat');
   };
 
   const toggleSpecialInManage = (id: string) => {
@@ -395,6 +400,7 @@ const DataCollectionPage: React.FC = () => {
     openAgent(
       `我已经确认将字段 [${field.key}] 映射为 [${targetLocalField}]。请更新数据分析策略。`
     );
+    router.push('/chat');
   };
 
   const handleOpenCreateField = () => {

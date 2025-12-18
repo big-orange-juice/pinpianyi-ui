@@ -38,7 +38,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           ? 'ring-2 ring-blue-500 border-transparent shadow-lg shadow-blue-100/60'
           : 'border-slate-100 shadow-sm'
       }`}
-      bodyStyle={{ padding: 24 }}>
+      styles={{ body: { padding: 24 } }}>
       {isActive && (
         <div className='absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-bl-lg' />
       )}
