@@ -25,6 +25,11 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { path: '/', label: '仪表盘', icon: <LayoutDashboard size={18} /> },
+    {
+      path: '/workbench',
+      label: '我的工作台',
+      icon: <LayoutDashboard size={18} />
+    },
     { path: '/chat', label: 'AI 对话', icon: <MessageSquare size={18} /> },
     {
       path: '/analysis',

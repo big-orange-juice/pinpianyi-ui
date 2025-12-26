@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竞品商品管理系统 - 演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1890ff;
+            margin-right: 48px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            flex: 1;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 20px 0;
+            position: relative;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover {
+            color: #1890ff;
+        }
+
+        .nav-item.active {
+            color: #1890ff;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1890ff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4d4f;
+            color: #fff;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* 数据卡片组 */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card.warning .stat-value {
+            color: #ff4d4f;
+        }
+
+        .stat-card.success .stat-value {
+            color: #52c41a;
+        }
+
+        .stat-card.info .stat-value {
+            color: #1890ff;
+        }
+
+        /* 内容区域 */
+        .content-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+
+        .btn-success {
+            background: #52c41a;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #73d13d;
+        }
+
+        .btn-danger {
+            background: #ff4d4f;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #ff7875;
+        }
+
+        .btn-default {
+            background: #fff;
+            color: #666;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-default:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        /* 商品对比卡片 */
+        .product-compare-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+
+        .product-compare-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .product-priority {
+            background: #fff1f0;
+            color: #ff4d4f;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .product-priority.high {
+            background: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .product-priority.medium {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .product-compare-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #e8e8e8;
+        }
+
+        .product-item {
+            background: #fff;
+            padding: 20px;
+        }
+
+        .product-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .product-image {
+            width: 120px;
+            height: 120px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 48px;
+        }
+
+        .product-info {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            color: #ff4d4f;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .match-info {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            padding: 12px 16px;
+            margin: 16px 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #52c41a;
+        }
+
+        .product-actions {
+            padding: 16px 20px;
+            background: #fafafa;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* 商品列表 */
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .product-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #fafafa;
+        }
+
+        .product-status {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .status-badge.normal {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .status-badge.important {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .status-badge.replacement {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .product-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .product-meta {
+            font-size: 13px;
+            color: #666;
+            padding: 12px 20px;
+            background: #fafafa;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        /* 待办任务列表 */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .task-item:hover {
+            border-color: #1890ff;
+            background: #f0f8ff;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-priority {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 12px;
+        }
+
+        .task-priority.high {
+            background: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .task-priority.medium {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .task-text {
+            color: #333;
+        }
+
+        /* 预警面板 */
+        .alert-panel {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #fa8c16;
+            margin-bottom: 12px;
+        }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        /* 搜索和筛选栏 */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1890ff;
+        }
+
+        .filter-select {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* 隐藏非活动页面 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 数据统计图表 */
+        .chart-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            border-radius: 8px;
+            color: #999;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .product-compare-content,
+            .product-body {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+        }
+
+        /* 导入页面样式 */
+        .upload-area {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 48px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 24px 0;
+        }
+
+        .upload-area:hover {
+            border-color: #1890ff;
+            background: #f0f8ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #1890ff;
+            margin-bottom: 16px;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e8e8e8;
+            z-index: -1;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e8e8e8;
+            color: #999;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .step.active .step-number {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .step-title {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 12px;
+            border: 1px solid #e8e8e8;
+            text-align: left;
+        }
+
+        .preview-table th {
+            background: #fafafa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <div class="navbar-content">
+            <div class="logo">竞品商品管理系统</div>
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">工作台</div>
+                <div class="nav-item" data-page="pending">待确认商品</div>
+                <div class="nav-item" data-page="review">采购复核</div>
+                <div class="nav-item" data-page="linked">已关联商品</div>
+                <div class="nav-item" data-page="unlinked">未关联商品</div>
+                <div class="nav-item" data-page="import">批量导入</div>
+                <div class="nav-item" data-page="statistics">数据统计</div>
+            </div>
+            <div class="nav-right">
+                <div class="notification-icon">
+                    🔔
+                    <span class="notification-badge">3</span>
+                </div>
+                <div>👤 管理员</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 工作台页面 -->
+        <div class="page active" id="dashboard">
+            <!-- 数据概览卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card warning">
+                    <div class="stat-label">待确认商品</div>
+                    <div class="stat-value">56</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-label">采购复核</div>
+                    <div class="stat-value">23</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">已关联商品</div>
+                    <div class="stat-value">1,234</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">未关联商品</div>
+                    <div class="stat-value">89</div>
+                </div>
+            </div>
+
+            <!-- 预警信息 -->
+            <div class="alert-panel">
+                <div class="alert-title">⚠️ 预警信息 (3)</div>
+                <div class="alert-list">
+                    <div class="alert-item">
+                        <span>商品X已下架，需要处理</span>
+                        <button class="btn btn-primary btn-sm">查看详情</button>
+                    </div>
+                    <div class="alert-item">
+                        <span>商品Y信息变更，匹配率低于阈值</span>
+                        <button class="btn btn-primary btn-sm">查看详情</button>
+                    </div>
+                    <div class="alert-item">
+                        <span>商品Z价格异常</span>
+                        <button class="btn btn-primary btn-sm">查看详情</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 待处理任务 -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">待处理任务 (56)</div>
+                    <button class="btn btn-default">查看全部</button>
+                </div>
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-info">
+                            <span class="task-priority high">高优先级</span>
+                            <span class="task-text">商品A需要确认关联</span>
+                        </div>
+                        <button class="btn btn-primary">去处理</button>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <span class="task-priority high">高优先级</span>
+                            <span class="task-text">商品B需要确认关联</span>
+                        </div>
+                        <button class="btn btn-primary">去处理</button>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <span class="task-priority medium">中优先级</span>
+                            <span class="task-text">商品C需要确认关联</span>
+                        </div>
+                        <button class="btn btn-primary">去处理</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 采购复核待办 -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">采购复核待办 (23)</div>
+                    <button class="btn btn-default">查看全部</button>
+                </div>
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-info">
+                            <span class="task-priority high" style="background: #e6f7ff; color: #1890ff;">待复核</span>
+                            <span class="task-text">可口可乐 500ml*12瓶 - 需要采购复核</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">确认人: 张三 | 价格差: -1.01%</div>
+                        </div>
+                        <button class="btn btn-primary">去复核</button>
+                    </div>
+                    <div class="task-item" style="background: #fff1f0;">
+                        <div class="task-info">
+                            <span class="task-priority high" style="background: #ff4d4f; color: #fff;">价格异常</span>
+                            <span class="task-text">蒙牛特仑苏 250ml*16盒 - 价格异常需重点复核</span>
+                            <div style="font-size: 12px; color: #ff4d4f; margin-top: 4px;">⚠️ 确认人: 王五 | 价格差: +28.99%</div>
+                        </div>
+                        <button class="btn btn-danger">去复核</button>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <span class="task-priority medium" style="background: #e6f7ff; color: #1890ff;">待复核</span>
+                            <span class="task-text">三只松鼠 每日坚果 750g - 需要采购复核</span>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">确认人: 李四 | 价格差: -1.89%</div>
+                        </div>
+                        <button class="btn btn-primary">去复核</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">快速操作</div>
+                </div>
+                <div style="display: flex; gap: 16px;">
+                    <button class="btn btn-primary">📥 批量导入</button>
+                    <button class="btn btn-default">🔍 查询商品</button>
+                    <button class="btn btn-default">⚙️ 系统设置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待确认商品页面 -->
+        <div class="page" id="pending">
+            <div class="toolbar">
+                <input type="text" class="search-input" placeholder="搜索商品...">
+                <select class="filter-select">
+                    <option>优先级排序</option>
+                    <option>最高优先级</option>
+                    <option>高优先级</option>
+                    <option>中优先级</option>
+                    <option>低优先级</option>
+                </select>
+                <button class="btn btn-primary">批量导入</button>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">待确认商品 (56) - 备注（配置一下算法匹配竞品相似度>配置值 列出来， 一对多的）</div>
+                    <div class="section-actions">
+                        <button class="btn btn-success">批量确认关联</button>
+                        <button class="btn btn-danger">批量拒绝</button>
+                    </div>
+                </div>
+
+                <!-- 商品对比卡片 1 -->
+                <div class="product-compare-card">
+                    <div class="product-priority high">1级 - 最高优先级</div>
+                    <div class="product-compare-content">
+                        <div class="product-item">
+                            <div class="product-label">拼便宜商品</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">可口可乐 500ml*12瓶 整箱</div>
+                                <div class="product-price">¥99.00</div>
+                                <div>品牌: 可口可乐</div>
+                                <div>规格: 500ml*12瓶</div>
+                                <div>库存: 有货</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-label">竞品商品 (京东)</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">可口可乐 汽水 500ml*12瓶</div>
+                                <div class="product-price">¥98.00</div>
+                                <div>品牌: 可口可乐</div>
+                                <div>规格: 500ml*12瓶</div>
+                                <div>来源: 京东</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        ✓ 算法推荐: 建议关联 | 匹配度: 92% | 匹配原因: 品牌、规格完全一致
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-success">✓ 确认关联</button>
+                        <button class="btn btn-danger">✗ 确认未关联</button>
+                        <button class="btn btn-default">需要采购复核</button>
+                    </div>
+                </div>
+
+                <!-- 商品对比卡片 2 -->
+                <div class="product-compare-card">
+                    <div class="product-priority medium">2级 - 高优先级</div>
+                    <div class="product-compare-content">
+                        <div class="product-item">
+                            <div class="product-label">拼便宜商品</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">三只松鼠 每日坚果 750g</div>
+                                <div class="product-price">¥159.00</div>
+                                <div>品牌: 三只松鼠</div>
+                                <div>规格: 750g/袋</div>
+                                <div>库存: 有货</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-label">竞品商品 (天猫)</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">三只松鼠 每日坚果大礼包 750g</div>
+                                <div class="product-price">¥156.00</div>
+                                <div>品牌: 三只松鼠</div>
+                                <div>规格: 750g</div>
+                                <div>来源: 天猫</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        ✓ 算法推荐: 建议关联 | 匹配度: 88% | 匹配原因: 品牌、重量一致
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-success">✓ 确认关联</button>
+                        <button class="btn btn-danger">✗ 确认未关联</button>
+                        <button class="btn btn-default">需要采购复核</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购复核页面 -->
+        <div class="page" id="review">
+            <div class="toolbar">
+                <input type="text" class="search-input" placeholder="搜索商品...">
+                <select class="filter-select">
+                    <option>全部状态</option>
+                    <option>待复核</option>
+                    <option>已通过</option>
+                    <option>已退回</option>
+                </select>
+                <button class="btn btn-primary">批量通过</button>
+                <button class="btn btn-danger">批量退回</button>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">采购复核 (23)</div>
+                    <div class="section-actions">
+                        <button class="btn btn-default">导出数据</button>
+                    </div>
+                </div>
+
+                <!-- 复核商品卡片 1 -->
+                <div class="product-compare-card">
+                    <div class="product-priority" style="background: #fff7e6; color: #fa8c16;">
+                        待复核 | 确认时间: 2025-01-18 10:30 | 确认人: 张三
+                    </div>
+                    <div class="product-compare-content">
+                        <div class="product-item">
+                            <div class="product-label">拼便宜商品</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">可口可乐 500ml*12瓶 整箱</div>
+                                <div class="product-price">¥99.00</div>
+                                <div>品牌: 可口可乐</div>
+                                <div>规格: 500ml*12瓶</div>
+                                <div>库存: 有货</div>
+                                <div>SKU: PBL001234</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-label">竞品商品 (京东)</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">可口可乐 汽水 500ml*12瓶</div>
+                                <div class="product-price">¥98.00</div>
+                                <div>品牌: 可口可乐</div>
+                                <div>规格: 500ml*12瓶</div>
+                                <div>来源: 京东</div>
+                                <div>竞品ID: JD001234</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        ✓ 匹配度: 92% | 价格差: -¥1.00 (-1.01%) | 算法推荐: 建议关联
+                    </div>
+                    <div style="padding: 16px 20px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <strong>采购复核信息:</strong>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: #666;">
+                            <div>• 确认人: 张三 (运营部)</div>
+                            <div>• 确认时间: 2025-01-18 10:30</div>
+                            <div>• 匹配率: 92%</div>
+                            <div>• 价格优势: 我方价格高 1.01%</div>
+                            <div>• 供应商: 可口可乐官方旗舰店</div>
+                            <div>• 采购周期: 7天</div>
+                        </div>
+                    </div>
+                    <div style="padding: 16px 20px; background: #fff; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">复核意见:</label>
+                            <textarea style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; resize: vertical;" rows="3" placeholder="请输入复核意见(选填)..."></textarea>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-success">✓ 通过复核</button>
+                        <button class="btn btn-danger">✗ 退回修改</button>
+                        <button class="btn btn-default">查看详情</button>
+                    </div>
+                </div>
+
+                <!-- 复核商品卡片 2 -->
+                <div class="product-compare-card">
+                    <div class="product-priority" style="background: #fff7e6; color: #fa8c16;">
+                        待复核 | 确认时间: 2025-01-18 09:15 | 确认人: 李四
+                    </div>
+                    <div class="product-compare-content">
+                        <div class="product-item">
+                            <div class="product-label">拼便宜商品</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">三只松鼠 每日坚果 750g</div>
+                                <div class="product-price">¥159.00</div>
+                                <div>品牌: 三只松鼠</div>
+                                <div>规格: 750g/袋</div>
+                                <div>库存: 有货</div>
+                                <div>SKU: PBL005678</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-label">竞品商品 (天猫)</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">三只松鼠 每日坚果大礼包 750g</div>
+                                <div class="product-price">¥156.00</div>
+                                <div>品牌: 三只松鼠</div>
+                                <div>规格: 750g</div>
+                                <div>来源: 天猫</div>
+                                <div>竞品ID: TM005678</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        ✓ 匹配度: 88% | 价格差: -¥3.00 (-1.89%) | 算法推荐: 建议关联
+                    </div>
+                    <div style="padding: 16px 20px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <strong>采购复核信息:</strong>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: #666;">
+                            <div>• 确认人: 李四 (运营部)</div>
+                            <div>• 确认时间: 2025-01-18 09:15</div>
+                            <div>• 匹配率: 88%</div>
+                            <div>• 价格优势: 我方价格高 1.89%</div>
+                            <div>• 供应商: 三只松鼠旗舰店</div>
+                            <div>• 采购周期: 3天</div>
+                        </div>
+                    </div>
+                    <div style="padding: 16px 20px; background: #fff; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px;">复核意见:</label>
+                            <textarea style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; resize: vertical;" rows="3" placeholder="请输入复核意见(选填)..."></textarea>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-success">✓ 通过复核</button>
+                        <button class="btn btn-danger">✗ 退回修改</button>
+                        <button class="btn btn-default">查看详情</button>
+                    </div>
+                </div>
+
+                <!-- 复核商品卡片 3 - 价格异常示例 -->
+                <div class="product-compare-card" style="border: 2px solid #ff4d4f;">
+                    <div class="product-priority" style="background: #fff1f0; color: #ff4d4f;">
+                        ⚠️ 待复核 - 价格异常 | 确认时间: 2025-01-18 08:45 | 确认人: 王五
+                    </div>
+                    <div class="product-compare-content">
+                        <div class="product-item">
+                            <div class="product-label">拼便宜商品</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">蒙牛特仑苏 纯牛奶 250ml*16盒</div>
+                                <div class="product-price">¥89.00</div>
+                                <div>品牌: 蒙牛</div>
+                                <div>规格: 250ml*16盒</div>
+                                <div>库存: 有货</div>
+                                <div>SKU: PBL009999</div>
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-label">竞品商品 (拼多多)</div>
+                            <div class="product-image">📦</div>
+                            <div class="product-info">
+                                <div class="product-name">蒙牛特仑苏 250ml*16盒装</div>
+                                <div class="product-price" style="color: #ff4d4f;">¥69.00</div>
+                                <div>品牌: 蒙牛</div>
+                                <div>规格: 250ml*16盒</div>
+                                <div>来源: 拼多多</div>
+                                <div>竞品ID: PDD009999</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 12px 20px; background: #fff1f0; border: 1px solid #ffccc7;">
+                        <div style="color: #ff4d4f; font-weight: 600;">
+                            ⚠️ 价格预警: 我方价格高出竞品 28.99%，需要采购部门重点复核
+                        </div>
+                    </div>
+                    <div style="padding: 16px 20px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <strong>采购复核信息:</strong>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: #666;">
+                            <div>• 确认人: 王五 (运营部)</div>
+                            <div>• 确认时间: 2025-01-18 08:45</div>
+                            <div>• 匹配率: 90%</div>
+                            <div style="color: #ff4d4f; font-weight: 600;">• 价格优势: 我方价格高 28.99% ⚠️</div>
+                            <div>• 供应商: 蒙牛官方旗舰店</div>
+                            <div>• 采购周期: 5天</div>
+                        </div>
+                    </div>
+                    <div style="padding: 16px 20px; background: #fff; border-top: 1px solid #e8e8e8;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #ff4d4f;">复核意见 (必填):</label>
+                            <textarea style="width: 100%; padding: 8px; border: 2px solid #ff4d4f; border-radius: 4px; font-size: 14px; resize: vertical;" rows="3" placeholder="价格异常商品必须填写复核意见..."></textarea>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-success">✓ 通过复核</button>
+                        <button class="btn btn-danger">✗ 退回修改</button>
+                        <button class="btn btn-default">查看详情</button>
+                        <button class="btn btn-default">价格分析</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 已关联商品页面 -->
+        <div class="page" id="linked">
+            <div class="toolbar">
+                <input type="text" class="search-input" placeholder="搜索商品...">
+                <select class="filter-select">
+                    <option>标签</option>
+                    <option>正常</option>
+                    <option>重点商品</option>
+                    <option>变更(竞品id 不变 商品更换)</option>
+                    <option>预警（竞品下架）</option>
+                    <option>拼便宜商品与竞品替代品</option>
+                </select>
+                <button class="btn btn-default">导出数据</button>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">已关联商品 (1,234)</div>
+                    <div class="section-actions">
+                        <button class="btn btn-default">列表视图</button>
+                        <button class="btn btn-default">卡片视图</button>
+                    </div>
+                </div>
+
+                <div class="product-list">
+                    <!-- 商品卡片 1 -->
+                    <div class="product-card">
+                        <div class="product-header">
+                            <div class="product-name">可口可乐 500ml*12瓶 整箱</div>
+                            <div class="product-status">
+                                <span class="status-badge normal">🟢 正常</span>
+                                <span class="status-badge important">⭐ 重点商品</span>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-item">
+                                <div class="product-label">拼便宜商品</div>
+                                <div class="product-image">📦</div>
+                                <div class="product-info">
+                                    <div class="product-price">¥99.00</div>
+                                    <div>库存: 有货</div>
+                                    <div>品牌: 可口可乐</div>
+                                    <div>规格: 500ml*12瓶</div>
+                                </div>
+                            </div>
+                            <div class="product-item">
+                                <div class="product-label">竞品商品 (京东)</div>
+                                <div class="product-image">📦</div>
+                                <div class="product-info">
+                                    <div class="product-price">¥98.00</div>
+                                    <div>库存: 有货</div>
+                                    <div>品牌: 可口可乐</div>
+                                    <div>来源: 京东</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-meta">
+                            关联时间: 2025-01-15 | 最后更新: 2025-01-18 | 监控状态: 正常 | 匹配率: 92%
+                        </div>
+                        <div class="product-actions" style="background: #fff; border-top: 1px solid #e8e8e8;">
+                            <button class="btn btn-primary">查看详情</button>
+                            <button class="btn btn-default">编辑</button>
+                            <button class="btn btn-default">移除关联</button>
+                            <button class="btn btn-default">设为重点</button>
+                        </div>
+                    </div>
+
+                    <!-- 商品卡片 2 -->
+                    <div class="product-card">
+                        <div class="product-header">
+                            <div class="product-name">三只松鼠 每日坚果 750g</div>
+                            <div class="product-status">
+                                <span class="status-badge normal">🟢 正常</span>
+                                <span class="status-badge replacement">🔄 替换品</span>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-item">
+                                <div class="product-label">拼便宜商品</div>
+                                <div class="product-image">📦</div>
+                                <div class="product-info">
+                                    <div class="product-price">¥159.00</div>
+                                    <div>库存: 有货</div>
+                                    <div>品牌: 三只松鼠</div>
+                                    <div>规格: 750g/袋</div>
+                                </div>
+                            </div>
+                            <div class="product-item">
+                                <div class="product-label">竞品商品 (天猫)</div>
+                                <div class="product-image">📦</div>
+                                <div class="product-info">
+                                    <div class="product-price">¥156.00</div>
+                                    <div>库存: 有货</div>
+                                    <div>品牌: 三只松鼠</div>
+                                    <div>来源: 天猫</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-meta">
+                            关联时间: 2025-01-14 | 最后更新: 2025-01-18 | 监控状态: 正常 | 匹配率: 88%
+                        </div>
+                        <div class="product-actions" style="background: #fff; border-top: 1px solid #e8e8e8;">
+                            <button class="btn btn-primary">查看详情</button>
+                            <button class="btn btn-default">编辑</button>
+                            <button class="btn btn-default">移除关联</button>
+                            <button class="btn btn-default">设为重点</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 未关联商品页面 -->
+        <div class="page" id="unlinked">
+            <div class="toolbar">
+                <input type="text" class="search-input" placeholder="搜索商品...">
+                <select class="filter-select">
+                    <option>全部时间</option>
+                    <option>最近7天</option>
+                    <option>最近30天</option>
+                </select>
+                <button class="btn btn-default">新品触发记录</button>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">未关联商品 (89)</div>
+                </div>
+
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="product-name">伊利纯牛奶 250ml*16盒</div>
+                            <div style="font-size: 13px; color: #666; margin-top: 8px;">
+                                加入时间: 2025-01-10 | 触发次数: 0次 | 未关联原因: 商品不匹配
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-default">查看详情</button>
+                            <button class="btn btn-primary">手动触发匹配</button>
+                        </div>
+                    </div>
+                    <div class="task-item" style="background: #fff7e6;">
+                        <div class="task-info">
+                            <div class="product-name">农夫山泉 550ml*12瓶</div>
+                            <div style="font-size: 13px; color: #666; margin-top: 8px;">
+                                加入时间: 2025-01-08 | 触发次数: 2次 | 最近触发: 2025-01-17 (检测到新品)
+                            </div>
+                            <div style="font-size: 12px; color: #fa8c16; margin-top: 4px;">
+                                🔔 有新品触发，等待确认
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary">去确认</button>
+                            <button class="btn btn-default">查看详情</button>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="product-name">蒙牛特仑苏 250ml*12盒</div>
+                            <div style="font-size: 13px; color: #666; margin-top: 8px;">
+                                加入时间: 2025-01-12 | 触发次数: 1次 | 未关联原因: 价格差异过大
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-default">查看详情</button>
+                            <button class="btn btn-primary">手动触发匹配</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量导入页面 -->
+        <div class="page" id="import">
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">批量导入关联关系</div>
+                </div>
+
+                <div class="steps">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-title">下载模板</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">上传文件</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">数据预览</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">开始导入</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <h3 style="margin-bottom: 16px;">步骤 1: 下载模板</h3>
+                    <div style="display: flex; gap: 16px;">
+                        <button class="btn btn-primary">📥 下载 Excel 模板</button>
+                        <button class="btn btn-default">📄 查看导入说明</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <h3 style="margin-bottom: 16px;">步骤 2: 上传文件</h3>
+                    <div class="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <div style="font-size: 16px; margin-bottom: 8px;">点击或拖拽文件到此处上传</div>
+                        <div style="color: #999; font-size: 14px;">支持格式: .xlsx, .xls</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <h3 style="margin-bottom: 16px;">步骤 3: 数据预览</h3>
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>拼便宜商品ID</th>
+                                <th>竞品商品ID</th>
+                                <th>来源平台</th>
+                                <th>导入类型</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>1001</td>
+                                <td>JD00001</td>
+                                <td>京东</td>
+                                <td>直接关联</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>1002</td>
+                                <td>TB00001</td>
+                                <td>淘宝</td>
+                                <td>待确认</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>1003</td>
+                                <td>JD00002</td>
+                                <td>京东</td>
+                                <td>直接关联</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="color: #666; font-size: 14px;">
+                        共 100 条数据，有效 98 条，错误 2 条
+                        <button class="btn btn-default" style="margin-left: 16px;">查看错误详情</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <h3 style="margin-bottom: 16px;">步骤 4: 导入设置</h3>
+                    <div style="background: #fafafa; padding: 20px; border-radius: 8px;">
+                        <div style="margin-bottom: 16px;">
+                            <label>
+                                <input type="radio" name="import-type" checked>
+                                直接关联 (跳过确认，直接进入已关联)
+                            </label>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label>
+                                <input type="radio" name="import-type">
+                                待确认导入 (需要人工确认)
+                            </label>
+                        </div>
+                        <div>
+                            <label>优先级设置: </label>
+                            <select class="filter-select">
+                                <option>4 - 低优先级</option>
+                                <option>3 - 中优先级</option>
+                                <option>2 - 高优先级</option>
+                                <option>1 - 最高优先级</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-default" style="margin-right: 16px;">取消</button>
+                    <button class="btn btn-primary">开始导入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据统计页面 -->
+        <div class="page" id="statistics">
+            <div class="toolbar">
+                <select class="filter-select">
+                    <option>最近30天</option>
+                    <option>最近7天</option>
+                    <option>最近90天</option>
+                </select>
+            </div>
+
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-label">总商品数</div>
+                    <div class="stat-value">1,379</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">关联率</div>
+                    <div class="stat-value">89.5%</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-label">确认转化率</div>
+                    <div class="stat-value">75.2%</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">预警数量</div>
+                    <div class="stat-value">12</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">商品状态分布</div>
+                </div>
+                <div class="chart-container">
+                    📊 饼图展示区域<br>
+                    已关联: 1,234 (89.5%) | 待确认: 56 (4.1%) | 未关联: 89 (6.4%)
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">确认效率趋势</div>
+                </div>
+                <div class="chart-container">
+                    📈 折线图展示区域<br>
+                    显示每日确认数量和转化率变化
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">预警统计</div>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 12px;">• 商品下架: 3</div>
+                    <div style="margin-bottom: 12px;">• 信息变更: 5</div>
+                    <div style="margin-bottom: 12px;">• 匹配率低: 4</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">新品触发分析</div>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 12px;">• 本月触发次数: 45</div>
+                    <div style="margin-bottom: 12px;">• 触发成功率: 68%</div>
+                    <div style="margin-bottom: 12px;">• 待处理新品: 12</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面切换功能
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 移除所有活动状态
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+
+                // 添加当前活动状态
+                this.classList.add('active');
+                const pageId = this.getAttribute('data-page');
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
+
+        // 按钮交互效果
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const btnText = this.textContent;
+
+                if (btnText.includes('确认关联')) {
+                    alert('✓ 已确认关联，商品进入采购复核流程');
+                    // 切换到采购复核页面
+                    setTimeout(() => {
+                        document.querySelector('[data-page="review"]').click();
+                    }, 500);
+                } else if (btnText.includes('通过复核')) {
+                    const reviewText = prompt('请输入复核意见(选填):');
+                    alert('✓ 复核通过！商品已移入已关联商品管理');
+                    // 切换到已关联商品页面
+                    setTimeout(() => {
+                        document.querySelector('[data-page="linked"]').click();
+                    }, 500);
+                } else if (btnText.includes('退回修改')) {
+                    const reason = prompt('请输入退回原因(必填):');
+                    if (reason) {
+                        alert('✓ 已退回，商品返回待确认状态，运营人员将收到通知');
+                        // 切换到待确认商品页面
+                        setTimeout(() => {
+                            document.querySelector('[data-page="pending"]').click();
+                        }, 500);
+                    } else {
+                        alert('请填写退回原因');
+                    }
+                } else if (btnText.includes('确认未关联')) {
+                    alert('✗ 已确认未关联，商品已移入未关联商品管理');
+                } else if (btnText.includes('需要采购复核')) {
+                    alert('商品将继续保留在待确认状态');
+                } else if (btnText.includes('去处理')) {
+                    // 切换到待确认商品页面
+                    document.querySelector('[data-page="pending"]').click();
+                } else if (btnText.includes('去确认') || btnText.includes('去复核')) {
+                    // 切换到采购复核页面
+                    document.querySelector('[data-page="review"]').click();
+                } else if (btnText.includes('查看详情')) {
+                    alert('打开商品详情页面');
+                } else if (btnText.includes('移除关联')) {
+                    if (confirm('确定要移除关联关系吗？')) {
+                        alert('✓ 关联已移除，商品已移至未关联商品池');
+                    }
+                } else if (btnText.includes('批量导入') || btnText.includes('下载')) {
+                    alert('功能演示中...');
+                } else if (btnText.includes('开始导入')) {
+                    alert('✓ 导入成功！\n总计: 100条\n成功: 98条\n失败: 2条');
+                }
+            });
+        });
+
+        // 上传区域交互
+        const uploadArea = document.querySelector('.upload-area');
+        if (uploadArea) {
+            uploadArea.addEventListener('click', function() {
+                alert('请选择要上传的 Excel 文件');
+            });
+        }
+
+        // 搜索框焦点效果
+        document.querySelectorAll('.search-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.boxShadow = '0 0 0 2px rgba(24, 144, 255, 0.2)';
+            });
+            input.addEventListener('blur', function() {
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // 通知图标点击
+        document.querySelector('.notification-icon').addEventListener('click', function() {
+            alert('通知中心：\n• 5个商品待确认 (2分钟前)\n• 商品A已下架 (10分钟前)\n• 检测到3个新品 (1小时前)');
+        });
+
+        console.log('竞品商品管理系统演示页面已加载');
+        console.log('功能包括：工作台、已关联商品、待确认商品、未关联商品、批量导入、数据统计');
+    </script>
+</body>
+</html>
