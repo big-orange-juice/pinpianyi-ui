@@ -10,7 +10,7 @@
 - 分页：Query `page`（从 1 开始）、`pageSize`；返回 `{ "items": T[], "total": number }`
 - 时间：ISO-8601 字符串
 
-工作台标签（确认管理）：
+工作台标签（确认关联）：
 
 - 接口枚举：`important | normal | replacement`
 - 展示文案：重点 / 正常 / 替代品（前端映射；如需后端返回中文可选加 `tagText`）
@@ -80,7 +80,7 @@
 | ---------------------------------- | -------------------------------------------- | ------ | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------- |
 | 顶部统计（待确认/已关联/未关联）   | `/api/workbench/stats`                       | GET    | Query（建议）：`region?` `platform?`                          | `{ pendingCount: number, linkedCount: number, unlinkedCount: number }` | ➕ 建议新增 |
 | 待确认商品列表（搜索/优先级/分页） | `/api/workbench/pending-matches`             | GET    | Query（建议）：`q?` `priority?` `page?` `pageSize?`           | `{ items: PendingMatchDto[], total }`                                  | ➕ 建议新增 |
-| 确认管理（选择标签并完成关联）     | `/api/workbench/pending-matches/:id/confirm` | POST   | Body：`{ selectedCandidateSkuId: string, tag: WorkbenchTag }` | `{ linkedId: string, tag: WorkbenchTag }`                              | ➕ 建议新增 |
+| 确认关联（选择标签并完成关联）     | `/api/workbench/pending-matches/:id/confirm` | POST   | Body：`{ selectedCandidateSkuId: string, tag: WorkbenchTag }` | `{ linkedId: string, tag: WorkbenchTag }`                              | ➕ 建议新增 |
 | 已关联列表（搜索/标签/分页）       | `/api/workbench/linked`                      | GET    | Query（建议）：`q?` `tag?` `page?` `pageSize?`                | `{ items: LinkedItemDto[], total }`                                    | ➕ 建议新增 |
 | 修改已关联标签                     | `/api/workbench/linked/:id/tag`              | PATCH  | Body：`{ tag: WorkbenchTag }`                                 | `LinkedItemDto`                                                        | ➕ 建议新增 |
 | 取消关联                           | `/api/workbench/linked/:id`                  | DELETE | 无                                                            | `{ success: true }`                                                    | ➕ 建议新增 |

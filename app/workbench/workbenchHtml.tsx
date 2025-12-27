@@ -435,7 +435,7 @@ const WorkbenchHtml: React.FC = () => {
                       setLinkTagDraft(linkTag);
                       setIsLinkTagModalOpen(true);
                     }}>
-                    确认管理
+                    确认关联
                   </HtmlButton>
                   <HtmlButton
                     variant='danger'
