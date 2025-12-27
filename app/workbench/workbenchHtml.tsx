@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { App } from 'antd';
+import { App, Modal, Tag } from 'antd';
 
 type TabKey = 'pending' | 'linked' | 'unlinked' | 'import';
 
@@ -38,6 +38,8 @@ type UnlinkedTask = {
   hint: string;
 };
 
+type LinkTagText = '重点' | '正常' | '替代品';
+
 const formatPrice = (value: number) => `¥${value.toFixed(2)}`;
 
 const badgeText = {
@@ -50,12 +52,12 @@ const WorkbenchHtml: React.FC = () => {
   const { message } = App.useApp();
   const [activeTab, setActiveTab] = useState<TabKey>('pending');
 
-  const demoAlert = (text: string) => {
-    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-      window.alert(text);
-      return;
-    }
+  const [isLinkTagModalOpen, setIsLinkTagModalOpen] = useState(false);
+  const [linkTag, setLinkTag] = useState<LinkTagText>('正常');
+  const [linkTagDraft, setLinkTagDraft] = useState<LinkTagText>('正常');
+  const [linkingItemId, setLinkingItemId] = useState<string | null>(null);
 
+  const demoAlert = (text: string) => {
     message.info(text);
   };
 
@@ -63,7 +65,6 @@ const WorkbenchHtml: React.FC = () => {
   const stats = useMemo(
     () => [
       { label: '待确认商品', value: '56', tone: 'warning' as const },
-      { label: '采购复核', value: '23', tone: 'info' as const },
       { label: '已关联商品', value: '1,234', tone: 'success' as const },
       { label: '未关联商品', value: '89', tone: 'default' as const }
     ],
@@ -106,7 +107,7 @@ const WorkbenchHtml: React.FC = () => {
           spec: '3.2kg/桶',
           price: 37.9
         },
-        matchDesc: '系统提示：规格存在差异，建议采购复核'
+        matchDesc: '系统提示：规格存在差异，建议人工确认'
       }
     ],
     []
@@ -276,7 +277,7 @@ const WorkbenchHtml: React.FC = () => {
 
   const SummaryCards = () => {
     return (
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
         {stats.map((s) => (
           <StatCard
             key={s.label}
@@ -429,17 +430,12 @@ const WorkbenchHtml: React.FC = () => {
                   <HtmlButton
                     variant='success'
                     onClick={() => {
-                      demoAlert('✓ 已确认关联，商品已移入已关联商品管理');
-                      setActiveTab('linked');
+                      if (isLinkTagModalOpen) return;
+                      setLinkingItemId(item.id);
+                      setLinkTagDraft(linkTag);
+                      setIsLinkTagModalOpen(true);
                     }}>
-                    确认关联
-                  </HtmlButton>
-                  <HtmlButton
-                    variant='default'
-                    onClick={() => {
-                      demoAlert('商品将继续保留在待确认状态');
-                    }}>
-                    需要采购复核
+                    确认管理
                   </HtmlButton>
                   <HtmlButton
                     variant='danger'
@@ -767,6 +763,51 @@ const WorkbenchHtml: React.FC = () => {
       {activeTab === 'linked' ? <Linked /> : null}
       {activeTab === 'unlinked' ? <Unlinked /> : null}
       {activeTab === 'import' ? <ImportPage /> : null}
+
+      <Modal
+        title='选择关联标签'
+        open={isLinkTagModalOpen}
+        okText='确认'
+        cancelText='取消'
+        centered
+        destroyOnHidden
+        maskClosable={false}
+        keyboard={false}
+        onCancel={() => {
+          setIsLinkTagModalOpen(false);
+          setLinkingItemId(null);
+        }}
+        onOk={() => {
+          if (!linkingItemId) {
+            setIsLinkTagModalOpen(false);
+            return;
+          }
+
+          setIsLinkTagModalOpen(false);
+          setLinkTag(linkTagDraft);
+          demoAlert(
+            `✓ 已确认关联（标签：${linkTagDraft}），商品已移入已关联商品管理（${linkingItemId}）`
+          );
+          setLinkingItemId(null);
+          setActiveTab('linked');
+        }}>
+        <div className='flex gap-3'>
+          {(
+            [
+              { label: '重点', value: '重点' as LinkTagText },
+              { label: '正常', value: '正常' as LinkTagText },
+              { label: '替代品', value: '替代品' as LinkTagText }
+            ] as const
+          ).map((opt) => (
+            <Tag.CheckableTag
+              key={opt.value}
+              checked={linkTagDraft === opt.value}
+              onChange={() => setLinkTagDraft(opt.value)}>
+              {opt.label}
+            </Tag.CheckableTag>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 };
